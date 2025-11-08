@@ -205,6 +205,17 @@ const Documents = () => {
       <div className="relative overflow-hidden bg-gradient-to-r from-red-600 via-red-700 to-red-800 px-4 py-16 sm:px-6 lg:px-8">
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="relative mx-auto max-w-7xl">
+          {/* Back Button */}
+          <button
+            onClick={() => navigate('/')}
+            className="absolute top-0 left-0 flex items-center space-x-2 text-white/90 hover:text-white transition-all duration-300 group mb-8"
+          >
+            <svg className="w-6 h-6 transform group-hover:-translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            <span className="font-medium">Back</span>
+          </button>
+
           <div className="text-center">
             <div className="flex items-center justify-center mb-6">
               <div className="p-4 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20">

@@ -1,22 +1,31 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../contexts/AuthContext';
 
 const Home = () => {
-  const { handleGoogleLogin } = useAuth();
+  const { handleGoogleLogin, user } = useAuth();
   const navigate = useNavigate();
+  const loginSectionRef = useRef(null);
+  const [isShaking, setIsShaking] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   const onGoogleSuccess = async (credentialResponse) => {
+    setIsLoggingIn(true); // Show loader
+
     const result = await handleGoogleLogin(credentialResponse);
 
     if (result.success) {
       // Redirect based on role
+      // Loader will stay visible until component unmounts
       if (result.user.role === 'admin') {
         navigate('/admin');
       } else {
         navigate('/documents');
       }
+    } else {
+      // Hide loader if login fails
+      setIsLoggingIn(false);
     }
   };
 
@@ -25,8 +34,40 @@ const Home = () => {
     alert('Failed to sign in with Google. Please try again.');
   };
 
+  const handleAccessNow = () => {
+    if (!user) {
+      // Not logged in - trigger shake animation
+      setIsShaking(true);
+      setTimeout(() => setIsShaking(false), 500);
+
+      // Then scroll to login section
+      loginSectionRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
+    } else {
+      // Logged in - navigate to documents
+      // (Documents page will handle payment check and redirect to /subscription if needed)
+      navigate('/documents');
+    }
+  };
+
   return (
-    <div className="min-h-screen">
+    <>
+      <style>
+        {`
+          @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+            20%, 40%, 60%, 80% { transform: translateX(10px); }
+          }
+
+          .animate-shake {
+            animation: shake 0.5s ease-in-out;
+          }
+        `}
+      </style>
+      <div className="min-h-screen">
       {/* Hero Section */}
       <div className="relative bg-gradient-to-br from-slate-800 via-blue-900 to-indigo-900 min-h-[600px] flex items-center">
         {/* Background overlay with pattern */}
@@ -50,15 +91,15 @@ const Home = () => {
                 Establish and Launch Your Business Venture in the UAE with us
               </h1>
               <div>
-                <button className="bg-white text-blue-900 hover:bg-gray-100 px-8 py-4 rounded-full font-semibold text-lg transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-2xl">
+                <button onClick={handleAccessNow} className="bg-white text-blue-900 hover:bg-gray-100 px-8 py-4 rounded-full font-semibold text-lg transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-2xl">
                   Access Now →
                 </button>
               </div>
             </div>
 
             {/* Right Side - Google Sign In Card */}
-            <div className="mt-8 lg:mt-0">
-              <div className="bg-gradient-to-br from-red-600 to-red-700 rounded-3xl p-8 lg:p-10 shadow-2xl border-2 border-red-400/50 backdrop-blur-sm">
+            <div ref={loginSectionRef} className="mt-8 lg:mt-0">
+              <div className={`bg-gradient-to-br from-red-600 to-red-700 rounded-3xl p-8 lg:p-10 shadow-2xl border-2 border-red-400/50 backdrop-blur-sm ${isShaking ? 'animate-shake' : ''}`}>
                 <div className="text-center mb-6 lg:mb-8">
                   <h2 className="text-2xl lg:text-3xl font-bold text-white mb-2 lg:mb-3">
                     Start Your Journey Here!
@@ -183,7 +224,7 @@ const Home = () => {
               </div>
 
               <div className="pt-4">
-                <button className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
+                <button onClick={handleAccessNow} className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
                   Access Now →
                 </button>
               </div>
@@ -191,7 +232,21 @@ const Home = () => {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+
+      {/* Login Loading Overlay */}
+      {isLoggingIn && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="bg-white rounded-2xl p-8 shadow-2xl">
+            <div className="flex flex-col items-center space-y-4">
+              <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+              <p className="text-gray-700 font-semibold text-lg">Signing you in...</p>
+              <p className="text-gray-500 text-sm">Please wait</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 
