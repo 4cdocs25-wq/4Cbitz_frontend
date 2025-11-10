@@ -168,6 +168,36 @@ const DocumentViewer = () => {
     }
   }, [id, user])
 
+  // Load only preview quality for preloading (doesn't trigger background upgrades)
+  const loadPreviewOnly = async (pageNumber, fileUrl, signal = null) => {
+    const previewKey = `${pageNumber}_preview`
+
+    // Skip if already cached or failed
+    if (pageCache.has(previewKey) || failedPages.has(pageNumber)) {
+      return null
+    }
+
+    if (!mountedRef.current) return null
+
+    try {
+      console.log(`⚡ Preloading preview for page ${pageNumber}...`)
+      const previewData = await convertPdfPageToImage(fileUrl, pageNumber, 1.0, signal, true)
+
+      if (!mountedRef.current) return null
+
+      if (previewData && previewData.success) {
+        pageCache.set(previewKey, previewData)
+        setPageCache(new Map(pageCache))
+        console.log(`✅ Preview preloaded for page ${pageNumber}`)
+        return previewData
+      }
+    } catch (error) {
+      console.log(`Failed to preload page ${pageNumber}:`, error.message)
+    }
+
+    return null
+  }
+
   const loadPage = async (pageNumber, fileUrl, signal = null) => {
     // Check if final quality page is already cached
     const cacheKey = `${pageNumber}_final`
@@ -196,63 +226,97 @@ const DocumentViewer = () => {
       if (!mountedRef.current) return null
       
       if (previewData && previewData.success) {
-        // Cache and display preview immediately
-        const newCache = new Map(pageCache)
-        newCache.set(previewKey, previewData)
-        setPageCache(newCache)
+        // Cache and display preview immediately (direct mutation for synchronous update)
+        pageCache.set(previewKey, previewData)
+        setPageCache(new Map(pageCache)) // Create new Map to trigger React re-render
         setLoadingPage(false)
         
         console.log(`✅ Preview loaded for page ${pageNumber}, loading final quality...`)
         
-        // Step 2: Load final quality in background (2-3 seconds later)
+        // Step 2: Load medium quality (2.0x) in background
         setTimeout(async () => {
           if (!mountedRef.current || failedPages.has(pageNumber)) return
-          
+
           try {
-            console.log(`✨ Loading crystal clear version for page ${pageNumber}...`)
-            const finalData = await convertPdfPageToImage(fileUrl, pageNumber, 3.0, signal, false)
-            
+            console.log(`📈 Loading medium quality (2.0x) for page ${pageNumber}...`)
+            const mediumData = await convertPdfPageToImage(fileUrl, pageNumber, 2.0, signal, false)
+
             if (!mountedRef.current) return
-            
-            if (finalData && finalData.success) {
-              // Replace preview with final quality
-              const finalCache = new Map(pageCache)
-              finalCache.delete(previewKey) // Remove preview
-              finalCache.set(cacheKey, finalData) // Add final quality
-              
-              // Keep cache size reasonable (max 8 pages total)
-              if (finalCache.size > 8) {
-                const entries = Array.from(finalCache.entries())
-                entries.slice(0, finalCache.size - 8).forEach(([key]) => {
-                  finalCache.delete(key)
-                })
-              }
-              
-              setPageCache(finalCache)
-              console.log(`💎 Crystal clear version ready for page ${pageNumber}!`)
-              
-              // Show enhancement indicator briefly
-              if (pageNumber === currentPage) {
-                setIsEnhancing(true)
-                setTimeout(() => setIsEnhancing(false), 2000)
-              }
+
+            if (mediumData && mediumData.success) {
+              const mediumKey = `${pageNumber}_2x`
+              pageCache.set(mediumKey, mediumData) // Add medium quality
+              setPageCache(new Map(pageCache)) // Trigger re-render with medium quality
+              console.log(`✅ Medium quality (2.0x) ready for page ${pageNumber}!`)
+
+              // Step 3: Load final quality (4.0x) after medium quality
+              setTimeout(async () => {
+                if (!mountedRef.current || failedPages.has(pageNumber)) return
+
+                try {
+                  console.log(`✨ Loading crystal clear quality (4.0x) for page ${pageNumber}...`)
+                  const finalData = await convertPdfPageToImage(fileUrl, pageNumber, 4.0, signal, false)
+
+                  if (!mountedRef.current) return
+
+                  if (finalData && finalData.success) {
+                    pageCache.set(cacheKey, finalData) // Add final quality
+                    setPageCache(new Map(pageCache)) // Trigger re-render with final quality
+                    console.log(`💎 Crystal clear quality (4.0x) ready for page ${pageNumber}!`)
+
+                    // Delete preview and medium quality after a delay for smooth transition
+                    setTimeout(() => {
+                      if (!mountedRef.current) return
+                      pageCache.delete(previewKey) // Remove preview
+                      pageCache.delete(mediumKey) // Remove medium quality
+
+                      // Keep cache size reasonable (max 8 pages total)
+                      if (pageCache.size > 8) {
+                        const entries = Array.from(pageCache.entries())
+                        entries.slice(0, pageCache.size - 8).forEach(([key]) => {
+                          pageCache.delete(key)
+                        })
+                      }
+
+                      setPageCache(new Map(pageCache)) // Update cache after cleanup
+                    }, 600) // 600ms allows smooth transition
+
+                    // Show enhancement indicator briefly
+                    if (pageNumber === currentPage) {
+                      setIsEnhancing(true)
+                      setTimeout(() => setIsEnhancing(false), 2000)
+                    }
+                  }
+                } catch {
+                  console.log(`⚠️ Final quality (4.0x) failed for page ${pageNumber}, keeping medium quality`)
+                }
+              }, 2000) // Wait 2 seconds after medium quality before loading final
             }
           } catch {
-            console.log(`⚠️ Final quality failed for page ${pageNumber}, keeping preview`)
+            console.log(`⚠️ Medium quality (2.0x) failed for page ${pageNumber}, keeping preview`)
           }
-        }, 500) // Load final quality after 500ms
+        }, 500) // Load medium quality after 500ms
         
-        // Simple preloading - only next page preview for documents under 200 pages
+        // Smart preloading - next 2-3 pages preview for documents under 200 pages
         if (totalPages < 200 && pageNumber < totalPages) {
-          setTimeout(() => {
-            const nextPagePreviewKey = `${pageNumber + 1}_preview`
-            const nextPageFinalKey = `${pageNumber + 1}_final`
-            if (mountedRef.current && !pageCache.has(nextPagePreviewKey) && !pageCache.has(nextPageFinalKey) && !failedPages.has(pageNumber + 1)) {
-              loadPage(pageNumber + 1, fileUrl, signal).catch(() => {
-                console.log(`Failed to preload page ${pageNumber + 1}`)
-              })
+          // Preload next 2-3 pages at preview quality only
+          for (let i = 1; i <= 3; i++) {
+            const nextPage = pageNumber + i
+            if (nextPage <= totalPages) {
+              setTimeout(() => {
+                if (!mountedRef.current) return
+                const previewKey = `${nextPage}_preview`
+                const finalKey = `${nextPage}_final`
+                const mediumKey = `${nextPage}_2x`
+                // Only preload if not already cached
+                if (!pageCache.has(previewKey) && !pageCache.has(finalKey) && !pageCache.has(mediumKey) && !failedPages.has(nextPage)) {
+                  loadPreviewOnly(nextPage, fileUrl, signal).catch(() => {
+                    console.log(`Failed to preload page ${nextPage}`)
+                  })
+                }
+              }, i * 500) // Stagger loads: 500ms, 1000ms, 1500ms
             }
-          }, 1500)
+          }
         }
         
         return previewData
@@ -296,14 +360,24 @@ const DocumentViewer = () => {
 
   const goToPage = async (pageNum) => {
     if (!mountedRef.current) return
-    
+
     const targetPage = Math.max(1, Math.min(pageNum, totalPages || 1))
     console.log(`🔄 goToPage called: ${pageNum} -> ${targetPage}`)
-    setCurrentPage(targetPage)
-    
-    if (document?.file_url && !pageCache.has(targetPage)) {
+
+    const finalKey = `${targetPage}_final`
+    const mediumKey = `${targetPage}_2x`
+    const previewKey = `${targetPage}_preview`
+
+    // Check if page exists in cache (preview, medium, or final)
+    const pageExists = pageCache.has(finalKey) || pageCache.has(mediumKey) || pageCache.has(previewKey)
+
+    if (document?.file_url && !pageExists) {
+      // Load the page FIRST, then update currentPage
       await loadPage(targetPage, document.file_url, abortController?.signal)
     }
+
+    // Update current page AFTER loading (this triggers re-render)
+    setCurrentPage(targetPage)
   }
 
   const handlePageInputKeyPress = (e) => {
@@ -413,10 +487,11 @@ const DocumentViewer = () => {
     )
   }
 
-  // Get the best available version of the current page (final quality preferred)
+  // Get the best available version of the current page (4.0x > 2.0x > 1.0x)
   const finalKey = `${currentPage}_final`
+  const mediumKey = `${currentPage}_2x`
   const previewKey = `${currentPage}_preview`
-  const currentPageData = pageCache.get(finalKey) || pageCache.get(previewKey)
+  const currentPageData = pageCache.get(finalKey) || pageCache.get(mediumKey) || pageCache.get(previewKey)
 
   return (
     <SecurityProvider>
@@ -435,39 +510,13 @@ const DocumentViewer = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                   </svg>
                 </div>
-                <span className="font-medium text-sm sm:text-base mobile-hide sm-tablet-show">Back</span>
-                <span className="font-medium text-sm mobile-show sm-tablet-hide">Back</span>
+                <span className="font-medium text-sm sm:text-base">Back</span>
               </button>
               
               <div className="flex items-center min-w-0 flex-1">
                 <h1 className="text-base sm:text-xl font-bold text-white mr-2 sm:mr-4 truncate max-w-xs sm:max-w-md">
                   {document?.title}
                 </h1>
-                <div className="hidden lg:flex items-center text-sm text-blue-200 space-x-4">
-                  <div className="flex items-center space-x-1 bg-white/10 px-3 py-1 rounded-lg">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
-                    </svg>
-                    <span>{formatFileSize(document?.file_size)}</span>
-                  </div>
-                  <div className="flex items-center space-x-1 bg-white/10 px-3 py-1 rounded-lg">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    <span>{totalPages} pages</span>
-                  </div>
-                  <div className="px-3 py-1 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg text-xs font-bold flex items-center space-x-1">
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                    </svg>
-                    <span>READ ONLY</span>
-                  </div>
-                </div>
-                {/* Mobile meta info */}
-                <div className="lg:hidden flex items-center text-xs text-blue-200 space-x-2">
-                  <span className="bg-white/10 px-2 py-1 rounded text-xs">{totalPages}p</span>
-                  <div className="w-1 h-1 bg-red-500 rounded-full"></div>
-                </div>
               </div>
             </div>
             
@@ -482,14 +531,6 @@ const DocumentViewer = () => {
                 <span className="mobile-hide sm-tablet-show">Refresh</span>
                 <span className="mobile-show sm-tablet-hide">⟳</span>
               </button>
-
-              <div className="hidden md:flex px-3 sm:px-4 py-2 bg-white/10 backdrop-blur-sm text-white rounded-xl text-xs sm:text-sm font-semibold items-center border border-white/20">
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-                <span className="hidden lg:inline">View Only Mode</span>
-                <span className="lg:hidden">View Only</span>
-              </div>
             </div>
           </div>
         </div>

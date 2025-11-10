@@ -19,6 +19,9 @@ const WatermarkedCanvas = ({
     const ctx = canvas.getContext('2d')
     const img = new Image()
 
+    // Fade out before loading new image for smooth transition
+    canvas.style.opacity = '0.3'
+
     img.onload = () => {
       try {
         // Set canvas dimensions to match image
@@ -43,13 +46,22 @@ const WatermarkedCanvas = ({
         if (totalPages > 1) {
           addPageNumber(ctx, canvas.width, pageNumber, totalPages)
         }
+
+        // Fade in after drawing is complete
+        requestAnimationFrame(() => {
+          canvas.style.opacity = '1'
+        })
       } catch (error) {
         console.error('Error rendering canvas:', error)
+        canvas.style.opacity = '1' // Restore opacity on error
       }
     }
 
     img.onerror = (error) => {
       console.error('Error loading image:', error)
+      if (canvasRef.current) {
+        canvasRef.current.style.opacity = '1' // Restore opacity on error
+      }
     }
 
     // Add crossOrigin to handle CORS issues
@@ -273,7 +285,7 @@ const WatermarkedCanvas = ({
   return (
     <canvas
       ref={canvasRef}
-      className={`w-full h-auto ${className}`}
+      className={`w-full h-auto transition-opacity duration-500 ${className}`}
       style={{
         minHeight: '80vh',
         objectFit: 'contain',

@@ -119,7 +119,6 @@ const Home = () => {
                       size="large"
                       text="continue_with"
                       shape="pill"
-                      width="100%"
                     />
                   </div>
 

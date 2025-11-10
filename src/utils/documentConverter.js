@@ -18,7 +18,7 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
 export const convertPdfPageToImage = async (pdfUrl, pageNumber, scale = 1.8, signal = null, isPreview = false) => {
   try {
     // Dynamic timeout based on quality level
-    const timeoutDuration = isPreview ? 5000 : 12000 // 5s for preview, 12s for final quality
+    const timeoutDuration = isPreview ? 5000 : 18000 // 5s for preview, 18s for final quality
     
     // Create timeout promise
     const timeoutPromise = new Promise((_, reject) => {
