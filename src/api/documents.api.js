@@ -2,8 +2,9 @@ import apiClient from './client';
 
 export const documentsAPI = {
   // Get all documents (public - for browsing)
-  getAll: async () => {
-    const response = await apiClient.get('/documents');
+  getAll: async (folderId = null) => {
+    const params = folderId ? { folder_id: folderId } : {};
+    const response = await apiClient.get('/documents', { params });
     return response.data;
   },
 
@@ -38,6 +39,20 @@ export const documentsAPI = {
   // Delete document (admin only)
   delete: async (id) => {
     const response = await apiClient.delete(`/documents/${id}`);
+    return response.data;
+  },
+
+  // Move document to folder (admin only)
+  moveToFolder: async (id, folderId = null) => {
+    const response = await apiClient.put(`/documents/${id}`, {
+      folder_id: folderId
+    });
+    return response.data;
+  },
+
+  // Toggle document visibility (admin only)
+  toggleVisibility: async (id) => {
+    const response = await apiClient.patch(`/documents/${id}/visibility`);
     return response.data;
   },
 };

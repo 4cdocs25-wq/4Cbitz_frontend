@@ -26,7 +26,6 @@ export const SecurityProvider = ({ children }) => {
 
     return () => {
       // Cleanup on unmount
-      console.log('🔒 4CSecure security cleaned up')
     }
   }, [user])
 

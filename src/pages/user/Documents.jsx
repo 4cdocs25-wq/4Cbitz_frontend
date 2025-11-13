@@ -1,84 +1,64 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { documentsAPI, usersAPI, paymentsAPI } from '../../api'
+import { documentsAPI, usersAPI, paymentsAPI, foldersAPI } from '../../api'
 import { useAuth } from '../../contexts/AuthContext'
+import FolderTree from '../../components/folders/FolderTree'
 
 const Documents = () => {
   const navigate = useNavigate()
   const { user, loading: authLoading } = useAuth()
   const [documents, setDocuments] = useState([])
+  const [folders, setFolders] = useState([])
+  const [selectedFolder, setSelectedFolder] = useState(null)
+  const [folderPath, setFolderPath] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [verifyingPayment, setVerifyingPayment] = useState(false)
-
-  // Debug: Component render
-  console.log('📄 Documents component rendered', {
-    userId: user?.id,
-    authLoading,
-    hasNavigate: !!navigate,
-    location: window.location.href
-  })
+  const [showFolderSidebar, setShowFolderSidebar] = useState(true)
 
   useEffect(() => {
-    console.log('🔍 Documents useEffect triggered', {
-      user: user?.id,
-      authLoading,
-      hasNavigate: !!navigate,
-      url: window.location.href
-    })
-
     const verifyPaymentAndLoadDocuments = async () => {
-      console.log('🔄 verifyPaymentAndLoadDocuments started', { authLoading, user: user?.id })
-
       // Wait for auth to finish loading
       if (authLoading) {
-        console.log('⏳ Still loading auth, returning...')
         return
       }
 
       // If no user, ProtectedRoute will handle redirect
       if (!user) {
-        console.log('❌ No user found, exiting...')
         setLoading(false)
         return
       }
 
       try {
-        console.log('✅ User authenticated:', user.id)
-        console.log('Checking payment status for user:', user.id)
-
         // Check if user is admin (role comes from user object now)
         const isAdmin = user.role === 'admin'
-        console.log('👤 User role:', user.role, 'Is admin:', isAdmin)
 
         if (isAdmin) {
-          console.log('👑 Admin user - bypassing payment check')
           await fetchDocuments()
           return
         }
 
+        // Check if profile is completed (regular users only)
+        if (!user.profile_completed) {
+          navigate('/profile-completion')
+          return
+        }
+
         // Check URL for session_id (returned from Stripe)
-        console.log('🔗 Checking URL for session_id...')
         const params = new URLSearchParams(window.location.search)
         const sessionId = params.get('session_id')
-        console.log('🔑 Session ID from URL:', sessionId)
 
         if (sessionId) {
-          console.log('💳 Session ID found, verifying payment with backend...')
           setVerifyingPayment(true)
 
           try {
             // Call backend API to verify payment
-            console.log('🚀 Calling verify payment API...')
             const response = await paymentsAPI.verifyPayment(sessionId)
-
-            console.log('📥 API response:', response)
 
             setVerifyingPayment(false)
 
             if (response.success) {
-              console.log('✅ Payment verified successfully!')
               // Clean URL
               window.history.replaceState({}, '', '/documents')
               // Load documents after successful payment
@@ -96,16 +76,11 @@ const Documents = () => {
         }
 
         // Check if user has purchases (backend will check payment status)
-        console.log('💾 Checking user purchases...')
         const purchasesResponse = await usersAPI.getPurchases()
 
-        console.log('💳 Purchases result:', purchasesResponse)
-
         if (purchasesResponse.success && purchasesResponse.data && purchasesResponse.data.length > 0) {
-          console.log('✅ User has purchases - loading documents')
           await fetchDocuments()
         } else {
-          console.log('❌ No purchases found - redirecting to subscription')
           navigate('/subscription')
         }
       } catch (error) {
@@ -118,20 +93,26 @@ const Documents = () => {
     verifyPaymentAndLoadDocuments()
   }, [user, authLoading, navigate])
 
+  const fetchFolders = async () => {
+    try {
+      const response = await foldersAPI.getTree()
+      if (response.success && response.data) {
+        setFolders(response.data)
+      }
+    } catch (error) {
+      console.error('Error fetching folders:', error)
+    }
+  }
+
   const fetchDocuments = async () => {
     try {
       setLoading(true)
       setError(null)
 
-      console.log('Fetching documents from backend API...')
-
-      const response = await documentsAPI.getAll()
-
-      console.log('API response:', response)
+      const response = await documentsAPI.getAll(selectedFolder)
 
       if (response.success && response.data) {
         setDocuments(response.data)
-        console.log('Documents loaded:', response.data.length)
       } else {
         throw new Error(response.message || 'Failed to fetch documents')
       }
@@ -139,10 +120,39 @@ const Documents = () => {
       console.error('Error fetching documents:', error)
       setError(error.message || 'Failed to load documents. Please try again.')
     } finally {
-      console.log('Setting loading to false')
       setLoading(false)
     }
   }
+
+  const fetchFolderPath = async () => {
+    if (!selectedFolder) {
+      setFolderPath([])
+      return
+    }
+    try {
+      const response = await foldersAPI.getPath(selectedFolder)
+      if (response.success && response.data) {
+        setFolderPath(response.data)
+      }
+    } catch (error) {
+      console.error('Error fetching folder path:', error)
+    }
+  }
+
+  // Fetch folders on mount and whenever selectedFolder changes
+  useEffect(() => {
+    if (user && !authLoading) {
+      fetchFolders()
+    }
+  }, [user, authLoading])
+
+  // Fetch documents when selected folder changes
+  useEffect(() => {
+    if (user && !authLoading && !verifyingPayment) {
+      fetchDocuments()
+      fetchFolderPath()
+    }
+  }, [selectedFolder])
 
   const handleDocumentClick = (document) => {
     navigate(`/documents/${document.id}`)
@@ -199,10 +209,14 @@ const Documents = () => {
     doc.description?.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
+  const handleFolderSelect = (folder) => {
+    setSelectedFolder(folder?.id || null)
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-gray-100">
       {/* Hero Section */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-red-600 via-red-700 to-red-800 px-4 py-16 sm:px-6 lg:px-8">
+      <div className="relative overflow-hidden bg-gradient-to-r from-red-600 via-red-700 to-red-800 px-4 py-12 sm:px-6 lg:px-8">
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="relative mx-auto max-w-7xl">
           {/* Back Button */}
@@ -259,28 +273,90 @@ const Documents = () => {
 
       {/* Main Content */}
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-16">
-        {/* Search and Filter Section */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-3xl border border-white/20 shadow-xl p-6 mb-8">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1 relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
+        <div className="flex gap-6">
+          {/* Folder Sidebar */}
+          <div className={`${showFolderSidebar ? 'w-64' : 'w-0'} transition-all duration-300 flex-shrink-0`}>
+            {showFolderSidebar && (
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/20 shadow-xl p-4 sticky top-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-semibold text-gray-900">Browse by Folder</h3>
+                  <button
+                    onClick={() => setShowFolderSidebar(false)}
+                    className="p-1 hover:bg-gray-100 rounded transition-colors lg:hidden"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                <div className="max-h-[600px] overflow-y-auto">
+                  <FolderTree
+                    folders={folders}
+                    selectedId={selectedFolder}
+                    onSelect={handleFolderSelect}
+                    readOnly={true}
+                    showRoot={true}
+                  />
+                </div>
               </div>
-              <input
-                type="text"
-                placeholder="Search documents..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-300"
-              />
-            </div>
-            <div className="flex items-center space-x-2">
-              <span className="text-sm font-medium text-gray-700">{filteredDocuments.length} documents</span>
-            </div>
+            )}
           </div>
-        </div>
+
+          {/* Documents Area */}
+          <div className="flex-1 min-w-0">
+            {/* Breadcrumb & Search Section */}
+            <div className="bg-white/80 backdrop-blur-sm rounded-3xl border border-white/20 shadow-xl p-6 mb-8">
+              {/* Breadcrumb */}
+              {folderPath.length > 0 && (
+                <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-4 pb-4 border-b border-gray-200">
+                  <button
+                    onClick={() => setSelectedFolder(null)}
+                    className="hover:text-gray-900 transition-colors"
+                  >
+                    All Documents
+                  </button>
+                  {folderPath.map((folder, index) => (
+                    <React.Fragment key={folder.id}>
+                      <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                      <span className="font-medium text-gray-900">{folder.name}</span>
+                    </React.Fragment>
+                  ))}
+                </nav>
+              )}
+
+              <div className="flex flex-col sm:flex-row gap-4">
+                {!showFolderSidebar && (
+                  <button
+                    onClick={() => setShowFolderSidebar(true)}
+                    className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                    </svg>
+                    <span className="text-sm font-medium">Show Folders</span>
+                  </button>
+                )}
+                <div className="flex-1 relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Search documents..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-300"
+                  />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm font-medium text-gray-700">{filteredDocuments.length} documents</span>
+                </div>
+              </div>
+            </div>
 
         {/* Documents Grid */}
         {authLoading || loading || verifyingPayment ? (
@@ -434,6 +510,8 @@ const Documents = () => {
             ))}
           </div>
         )}
+          </div>
+        </div>
       </div>
     </div>
   )

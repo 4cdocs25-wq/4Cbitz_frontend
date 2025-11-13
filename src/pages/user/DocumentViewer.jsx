@@ -44,50 +44,34 @@ const DocumentViewer = () => {
 
     const fetchDocument = async (attemptNumber = 1) => {
       try {
-        console.log('🔄 Starting fetchDocument, attempt:', attemptNumber)
         if (!mountedRef.current) return
-        
+
         if (!user) {
-          console.log('❌ No user found')
           setError('Please log in to view documents.')
           setLoading(false)
           return
         }
 
-        console.log('✅ User found:', user.email)
-
         // Reset error state
         setError(null)
 
         // Get document metadata
-        console.log('📄 Fetching document with ID:', id)
         const response = await documentsAPI.getById(id)
 
-        console.log('📄 Document fetch result:', response)
-        console.log('🔍 DEBUG - mountedRef.current:', mountedRef.current)
-        console.log('🔍 DEBUG - response.success:', response.success)
-        console.log('🔍 DEBUG - response.data:', response.data)
-        console.log('🔍 DEBUG - typeof response.data:', typeof response.data)
-
         if (!mountedRef.current) {
-          console.log('❌ Component unmounted, stopping execution')
           return
         }
 
         if (!response.success || !response.data) {
-          console.log('❌ Document error:', response.message)
-          console.log('🔍 DEBUG - Validation failed. success:', response.success, 'data:', response.data)
           setError('Document not found or access denied.')
           setLoading(false)
           return
         }
 
         const docData = response.data
-        console.log('✅ Document found:', docData.title)
 
         // Check if user has access to the document
         if (docData.hasAccess === false) {
-          console.log('❌ User does not have access to this document')
           setError('You do not have access to this document. Please purchase it first.')
           setLoading(false)
           return
@@ -95,46 +79,37 @@ const DocumentViewer = () => {
 
         // Check if file_url exists
         if (!docData.file_url) {
-          console.log('❌ Document file URL is missing')
           setError('Document file is not available. Please contact support.')
           setLoading(false)
           return
         }
 
         try {
-          console.log('🔄 Setting document data...')
           setDocument(docData)
-          console.log('✅ Document data set successfully')
         } catch (err) {
           console.error('❌ Error setting document:', err)
           throw err
         }
 
-        console.log('🔄 Continuing after setDocument, mounted?', mountedRef.current)
         if (!mountedRef.current) {
-          console.log('❌ Component unmounted after setDocument')
           return
         }
 
         // Get PDF metadata (total pages) without converting
         const fileExtension = docData.file_url?.split('.').pop()?.toLowerCase() || 'pdf'
-        console.log('📄 File extension:', fileExtension, 'URL:', docData.file_url)
-        
+
         if (fileExtension === 'pdf') {
-          console.log('📄 Getting PDF metadata...')
           const metadata = await getPdfMetadata(docData.file_url, controller.signal)
-          console.log('📄 PDF metadata result:', metadata)
-          
+
           if (!mountedRef.current) return
 
           if (metadata.success && metadata.totalPages > 0) {
-            console.log('✅ PDF has', metadata.totalPages, 'pages')
             setTotalPages(metadata.totalPages)
-            
+
             // Set initial state
             setCurrentPage(1)
             setLoading(false)
-            
+
             // Load first page immediately
             setTimeout(() => {
               if (mountedRef.current) {
@@ -146,7 +121,6 @@ const DocumentViewer = () => {
           }
         } else {
           // For non-PDF files, fall back to simple display
-          console.log('📄 Non-PDF file, using simple display')
           setTotalPages(1)
           setLoading(false)
         }
@@ -180,7 +154,6 @@ const DocumentViewer = () => {
     if (!mountedRef.current) return null
 
     try {
-      console.log(`⚡ Preloading preview for page ${pageNumber}...`)
       const previewData = await convertPdfPageToImage(fileUrl, pageNumber, 1.0, signal, true)
 
       if (!mountedRef.current) return null
@@ -188,11 +161,10 @@ const DocumentViewer = () => {
       if (previewData && previewData.success) {
         pageCache.set(previewKey, previewData)
         setPageCache(new Map(pageCache))
-        console.log(`✅ Preview preloaded for page ${pageNumber}`)
         return previewData
       }
     } catch (error) {
-      console.log(`Failed to preload page ${pageNumber}:`, error.message)
+      // Silently fail preload
     }
 
     return null
@@ -209,7 +181,6 @@ const DocumentViewer = () => {
 
     // Skip if page has failed before
     if (failedPages.has(pageNumber)) {
-      console.log(`⏭️ Skipping page ${pageNumber} - already failed`)
       return null
     }
 
@@ -217,28 +188,24 @@ const DocumentViewer = () => {
     if (!mountedRef.current) return null
 
     setLoadingPage(true)
-    
+
     try {
       // Step 1: Load fast preview (1-2 seconds)
-      console.log(`🚀 Loading preview for page ${pageNumber}...`)
       const previewData = await convertPdfPageToImage(fileUrl, pageNumber, 1.0, signal, true)
-      
+
       if (!mountedRef.current) return null
-      
+
       if (previewData && previewData.success) {
         // Cache and display preview immediately (direct mutation for synchronous update)
         pageCache.set(previewKey, previewData)
         setPageCache(new Map(pageCache)) // Create new Map to trigger React re-render
         setLoadingPage(false)
-        
-        console.log(`✅ Preview loaded for page ${pageNumber}, loading final quality...`)
-        
+
         // Step 2: Load medium quality (2.0x) in background
         setTimeout(async () => {
           if (!mountedRef.current || failedPages.has(pageNumber)) return
 
           try {
-            console.log(`📈 Loading medium quality (2.0x) for page ${pageNumber}...`)
             const mediumData = await convertPdfPageToImage(fileUrl, pageNumber, 2.0, signal, false)
 
             if (!mountedRef.current) return
@@ -247,14 +214,12 @@ const DocumentViewer = () => {
               const mediumKey = `${pageNumber}_2x`
               pageCache.set(mediumKey, mediumData) // Add medium quality
               setPageCache(new Map(pageCache)) // Trigger re-render with medium quality
-              console.log(`✅ Medium quality (2.0x) ready for page ${pageNumber}!`)
 
               // Step 3: Load final quality (4.0x) after medium quality
               setTimeout(async () => {
                 if (!mountedRef.current || failedPages.has(pageNumber)) return
 
                 try {
-                  console.log(`✨ Loading crystal clear quality (4.0x) for page ${pageNumber}...`)
                   const finalData = await convertPdfPageToImage(fileUrl, pageNumber, 4.0, signal, false)
 
                   if (!mountedRef.current) return
@@ -262,7 +227,6 @@ const DocumentViewer = () => {
                   if (finalData && finalData.success) {
                     pageCache.set(cacheKey, finalData) // Add final quality
                     setPageCache(new Map(pageCache)) // Trigger re-render with final quality
-                    console.log(`💎 Crystal clear quality (4.0x) ready for page ${pageNumber}!`)
 
                     // Delete preview and medium quality after a delay for smooth transition
                     setTimeout(() => {
@@ -288,15 +252,15 @@ const DocumentViewer = () => {
                     }
                   }
                 } catch {
-                  console.log(`⚠️ Final quality (4.0x) failed for page ${pageNumber}, keeping medium quality`)
+                  // Final quality failed, keeping medium quality
                 }
               }, 2000) // Wait 2 seconds after medium quality before loading final
             }
           } catch {
-            console.log(`⚠️ Medium quality (2.0x) failed for page ${pageNumber}, keeping preview`)
+            // Medium quality failed, keeping preview
           }
         }, 500) // Load medium quality after 500ms
-        
+
         // Smart preloading - next 2-3 pages preview for documents under 200 pages
         if (totalPages < 200 && pageNumber < totalPages) {
           // Preload next 2-3 pages at preview quality only
@@ -311,7 +275,7 @@ const DocumentViewer = () => {
                 // Only preload if not already cached
                 if (!pageCache.has(previewKey) && !pageCache.has(finalKey) && !pageCache.has(mediumKey) && !failedPages.has(nextPage)) {
                   loadPreviewOnly(nextPage, fileUrl, signal).catch(() => {
-                    console.log(`Failed to preload page ${nextPage}`)
+                    // Silently handle preload failure
                   })
                 }
               }, i * 500) // Stagger loads: 500ms, 1000ms, 1500ms
@@ -362,7 +326,6 @@ const DocumentViewer = () => {
     if (!mountedRef.current) return
 
     const targetPage = Math.max(1, Math.min(pageNum, totalPages || 1))
-    console.log(`🔄 goToPage called: ${pageNum} -> ${targetPage}`)
 
     const finalKey = `${targetPage}_final`
     const mediumKey = `${targetPage}_2x`
@@ -686,56 +649,6 @@ const DocumentViewer = () => {
                   {/* Overlay gradient on hover */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl pointer-events-none"></div>
                   
-                </div>
-              </div>
-              
-              {/* Enhanced Security Notice Footer */}
-              <div className="border-t border-red-200 bg-gradient-to-r from-red-500 to-orange-500 text-white">
-                <div className="px-8 py-6">
-                  <div className="text-center">
-                    <div className="flex items-center justify-center mb-4">
-                      <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mr-3">
-                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                        </svg>
-                      </div>
-                      <div>
-                        <h3 className="text-xl font-bold">SECURITY PROTECTED DOCUMENT</h3>
-                        <p className="text-red-100 text-sm">Maximum security enabled</p>
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                      <div className="flex items-center justify-center space-x-2 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                        </svg>
-                        <span className="font-semibold">Print Disabled</span>
-                      </div>
-                      <div className="flex items-center justify-center space-x-2 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                        </svg>
-                        <span className="font-semibold">Copy Blocked</span>
-                      </div>
-                      <div className="flex items-center justify-center space-x-2 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
-                        </svg>
-                        <span className="font-semibold">Download Restricted</span>
-                      </div>
-                  
-                    </div>
-                    
-                    <div className="text-center">
-                      <p className="text-red-100 font-medium mb-2">
-                        🔒 This document is for viewing purposes only • 4CSecure watermarked
-                      </p>
-                      <p className="text-red-200 text-sm">
-                        Generated on {new Date().toLocaleDateString()} • Secure viewing session active
-                      </p>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>

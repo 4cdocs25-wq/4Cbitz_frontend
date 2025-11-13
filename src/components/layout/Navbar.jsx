@@ -11,14 +11,11 @@ const Navbar = () => {
   const handleSignOut = async () => {
     if (isSigningOut) return // Prevent double-clicks
 
-    console.log('Sign Out button clicked!')
     setIsSigningOut(true)
     setIsMobileMenuOpen(false) // Close mobile menu immediately
 
     try {
-      console.log('Calling handleLogout function...')
       await handleLogout()
-      console.log('Logout successful, navigating to home...')
 
       // Small delay to ensure auth state has updated
       setTimeout(() => {

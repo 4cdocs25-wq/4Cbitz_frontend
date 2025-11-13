@@ -113,14 +113,12 @@ export const convertPdfPageToImage = async (pdfUrl, pageNumber, scale = 1.8, sig
  */
 export const getPdfMetadata = async (pdfUrl, signal = null) => {
   try {
-    console.log('📄 Loading PDF metadata from:', pdfUrl)
-    
     // Shorter timeout for metadata - 10 seconds
     const timeoutPromise = new Promise((_, reject) => {
       const timeout = setTimeout(() => {
         reject(new Error('PDF metadata timeout'))
       }, 10000)
-      
+
       if (signal) {
         signal.addEventListener('abort', () => {
           clearTimeout(timeout)
@@ -154,14 +152,10 @@ export const getPdfMetadata = async (pdfUrl, signal = null) => {
  */
 export const convertPdfToImages = async (pdfUrl, scale = 1.8, onProgress = null) => {
   try {
-    console.log('📄 Loading PDF from:', pdfUrl)
-    
     // Load the PDF document
     const loadingTask = pdfjs.getDocument(pdfUrl)
     const pdf = await loadingTask.promise
-    
-    console.log('✅ PDF loaded successfully, pages:', pdf.numPages)
-    
+
     let pages = []
     
     // Convert each page to canvas/image
@@ -218,8 +212,7 @@ export const convertPdfToImages = async (pdfUrl, scale = 1.8, onProgress = null)
         onProgress(progressPercent, pageNum, pdf.numPages)
       }
     }
-    
-    console.log('✅ PDF converted to images successfully')
+
     return {
       pages,
       totalPages: pdf.numPages,

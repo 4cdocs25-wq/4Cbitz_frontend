@@ -7,13 +7,6 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
   const [showTimeout, setShowTimeout] = useState(false)
 
   useEffect(() => {
-    console.log('🛡️ ProtectedRoute: State changed', {
-      loading,
-      hasUser: !!user,
-      userRole,
-      requiredRole
-    })
-
     // Show timeout message after 8 seconds of loading
     const timeoutId = setTimeout(() => {
       if (loading) {
@@ -50,22 +43,15 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
     )
   }
 
-  console.log('🛡️ ProtectedRoute: Loading complete, checking access...')
-
   if (!user) {
-    console.log('🛡️ ProtectedRoute: No user, redirecting to /')
     return <Navigate to="/" />
   }
 
-  if (requiredRole && userRole !== requiredRole) {
-    console.log('🛡️ ProtectedRoute: Role mismatch, redirecting to /', {
-      required: requiredRole,
-      actual: userRole
-    })
+  // Allow admins to access all routes, otherwise check role match
+  if (requiredRole && userRole !== requiredRole && userRole !== 'admin') {
     return <Navigate to="/" />
   }
 
-  console.log('🛡️ ProtectedRoute: Access granted, rendering children')
   return children
 }
 

@@ -1,8 +1,8 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { loadStripe } from '@stripe/stripe-js'
-import { paymentsAPI } from '../../api'
+import { paymentsAPI, usersAPI, settingsAPI } from '../../api'
 
 // Initialize Stripe
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
@@ -11,19 +11,50 @@ const Subscription = () => {
   const { user } = useAuth()
   const navigate = useNavigate()
   const [isProcessing, setIsProcessing] = useState(false)
+  const [hasSubscription, setHasSubscription] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [price, setPrice] = useState('29.99')
+
+  useEffect(() => {
+    checkSubscriptionStatus()
+    fetchPrice()
+  }, [])
+
+  const fetchPrice = async () => {
+    try {
+      const response = await settingsAPI.getPublicByKey('lifetime_subscription_price')
+      if (response.success && response.data) {
+        setPrice(response.data.value)
+      }
+    } catch (error) {
+      console.error('Error fetching price:', error)
+      // Keep default price of 29.99 if fetch fails
+    }
+  }
+
+  const checkSubscriptionStatus = async () => {
+    try {
+      const response = await usersAPI.getPurchases()
+      if (response.success && response.data) {
+        // Check if user has any purchases (lifetime subscription)
+        setHasSubscription(response.data.length > 0)
+      }
+    } catch (error) {
+      console.error('Error checking subscription:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handlePayment = async () => {
     setIsProcessing(true)
 
     try {
-      console.log('Creating Stripe Checkout session...')
-
       // Note: We're not specifying a document ID - backend will handle lifetime access
       // Call backend API to create Stripe Checkout session
       const response = await paymentsAPI.createCheckout()
 
       if (response.success && response.data?.checkoutUrl) {
-        console.log('Redirecting to Stripe Checkout...')
         // Redirect to Stripe Checkout
         window.location.href = response.data.checkoutUrl
       } else {
@@ -78,7 +109,7 @@ const Subscription = () => {
             <div className="text-center mb-10">
               <div className="inline-block bg-gradient-to-r from-red-600 to-red-700 rounded-2xl px-8 py-6 mb-6">
                 <div className="text-5xl sm:text-6xl font-bold text-white mb-2">
-                  $29.99
+                  ${price}
                 </div>
                 <div className="text-red-100 text-lg">One-time payment</div>
               </div>
@@ -174,38 +205,65 @@ const Subscription = () => {
 
             {/* Buttons */}
             <div className="space-y-4">
-              {/* Pay with Stripe Button */}
-              <button
-                onClick={handlePayment}
-                disabled={isProcessing}
-                className={`w-full font-bold py-4 px-6 rounded-xl text-lg transition-all duration-300 transform shadow-lg ${
-                  isProcessing
-                    ? 'bg-gray-400 cursor-not-allowed'
-                    : 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 hover:scale-105 hover:shadow-xl text-white'
-                }`}
-              >
-                {isProcessing ? (
-                  <div className="flex items-center justify-center space-x-2">
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    <span>Processing...</span>
+              {loading ? (
+                <div className="flex justify-center py-8">
+                  <div className="w-8 h-8 rounded-full border-4 border-red-200 border-t-red-600 animate-spin"></div>
+                </div>
+              ) : hasSubscription ? (
+                /* Already Subscribed */
+                <div className="space-y-4">
+                  <div className="bg-green-50 border-2 border-green-200 rounded-xl p-6 text-center">
+                    <div className="flex justify-center mb-4">
+                      <svg className="w-16 h-16 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <h3 className="text-2xl font-bold text-green-900 mb-2">You're Already Subscribed!</h3>
+                    <p className="text-green-700 mb-6">You have lifetime access to all premium documents</p>
+                    <button
+                      onClick={() => navigate('/documents')}
+                      className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-4 px-6 rounded-xl text-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
+                    >
+                      View All Documents →
+                    </button>
                   </div>
-                ) : (
-                  <div className="flex items-center justify-center space-x-2">
-                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                    </svg>
-                    <span>Pay with Stripe</span>
-                  </div>
-                )}
-              </button>
+                </div>
+              ) : (
+                /* Not Subscribed - Show Payment Button */
+                <>
+                  <button
+                    onClick={handlePayment}
+                    disabled={isProcessing}
+                    className={`w-full font-bold py-4 px-6 rounded-xl text-lg transition-all duration-300 transform shadow-lg ${
+                      isProcessing
+                        ? 'bg-gray-400 cursor-not-allowed'
+                        : 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 hover:scale-105 hover:shadow-xl text-white'
+                    }`}
+                  >
+                    {isProcessing ? (
+                      <div className="flex items-center justify-center space-x-2">
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <span>Processing...</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center space-x-2">
+                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        </svg>
+                        <span>Pay with Stripe</span>
+                      </div>
+                    )}
+                  </button>
 
-              {/* Security Badge */}
-              <div className="flex items-center justify-center space-x-2 text-sm text-gray-500 pt-4">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-                <span>Secure Payment • SSL Encrypted</span>
-              </div>
+                  {/* Security Badge */}
+                  <div className="flex items-center justify-center space-x-2 text-sm text-gray-500 pt-4">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                    <span>Secure Payment • SSL Encrypted</span>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* User Info */}

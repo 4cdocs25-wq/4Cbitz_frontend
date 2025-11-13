@@ -22,6 +22,28 @@ export const paymentsAPI = {
     const response = await apiClient.get(`/payments/status/${sessionId}`);
     return response.data;
   },
+
+  // Admin: Get all transactions with pagination and filters
+  getTransactions: async (params = {}) => {
+    const { limit = 20, offset = 0, status, search, startDate, endDate } = params;
+    const queryParams = new URLSearchParams({
+      limit: limit.toString(),
+      offset: offset.toString(),
+      ...(status && { status }),
+      ...(search && { search }),
+      ...(startDate && { startDate }),
+      ...(endDate && { endDate }),
+    });
+
+    const response = await apiClient.get(`/payments/admin/transactions?${queryParams}`);
+    return response.data;
+  },
+
+  // Admin: Get transaction statistics
+  getTransactionStats: async () => {
+    const response = await apiClient.get('/payments/admin/stats');
+    return response.data;
+  },
 };
 
 export default paymentsAPI;

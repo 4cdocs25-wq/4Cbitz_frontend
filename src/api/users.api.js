@@ -12,6 +12,25 @@ export const usersAPI = {
     const response = await apiClient.get('/users/profile');
     return response.data;
   },
+
+  // Update user profile
+  updateProfile: async (profileData) => {
+    const response = await apiClient.put('/users/profile', profileData);
+    return response.data;
+  },
+
+  // Admin: Get all users with subscription information
+  getAllUsers: async (params = {}) => {
+    const { limit = 20, offset = 0, search } = params;
+    const queryParams = new URLSearchParams({
+      limit: limit.toString(),
+      offset: offset.toString(),
+      ...(search && { search }),
+    });
+
+    const response = await apiClient.get(`/users/admin/all?${queryParams}`);
+    return response.data;
+  },
 };
 
 export default usersAPI;
