@@ -43,34 +43,30 @@ serve(async (req) => {
       status: session.status,
     })
 
+    // Initialize Supabase client with service role key
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+    )
+
     // Check if payment was successful
     if (session.payment_status === 'paid' && session.status === 'complete') {
-      console.log('Payment confirmed - creating payment record')
+      console.log('Payment confirmed - updating payment record to completed')
 
-      // Initialize Supabase client with service role key
-      const supabaseAdmin = createClient(
-        Deno.env.get('SUPABASE_URL') ?? '',
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-      )
-
-      // Create or update payment record
+      // Update existing pending transaction to completed
       const { error } = await supabaseAdmin
         .from('payments')
-        .upsert({
-          user_id: userId,
-          payment_status: 'paid',
+        .update({
+          payment_status: 'completed',
           stripe_payment_intent_id: session.payment_intent as string,
-          stripe_session_id: sessionId,
-          amount: session.amount_total,
-          created_at: new Date().toISOString(),
-        }, {
-          onConflict: 'user_id'
+          updated_at: new Date().toISOString(),
         })
+        .eq('stripe_session_id', sessionId)
 
       if (error) {
-        console.error('Error creating payment record:', error)
+        console.error('Error updating payment record:', error)
         return new Response(
-          JSON.stringify({ error: 'Failed to create payment record', details: error.message }),
+          JSON.stringify({ error: 'Failed to update payment record', details: error.message }),
           {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: 500,
@@ -78,7 +74,7 @@ serve(async (req) => {
         )
       }
 
-      console.log('Payment record created successfully')
+      console.log('Payment record updated to completed successfully')
 
       return new Response(
         JSON.stringify({
@@ -92,14 +88,27 @@ serve(async (req) => {
         },
       )
     } else {
-      // Payment not completed yet
+      // Payment not completed - update to failed status
       console.log('Payment not completed:', { payment_status: session.payment_status, status: session.status })
+
+      // Update transaction to failed
+      const { error } = await supabaseAdmin
+        .from('payments')
+        .update({
+          payment_status: 'failed',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('stripe_session_id', sessionId)
+
+      if (error) {
+        console.error('Error updating payment to failed:', error)
+      }
 
       return new Response(
         JSON.stringify({
           success: false,
-          paymentStatus: session.payment_status,
-          message: 'Payment not completed yet'
+          paymentStatus: 'failed',
+          message: 'Payment not completed'
         }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },

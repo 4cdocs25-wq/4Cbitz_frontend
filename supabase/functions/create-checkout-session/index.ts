@@ -1,5 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import Stripe from 'https://esm.sh/stripe@14.21.0?target=deno'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -17,6 +18,12 @@ serve(async (req) => {
       apiVersion: '2024-11-20.acacia',
       httpClient: Stripe.createFetchHttpClient(),
     })
+
+    // Initialize Supabase client
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
 
     const { userId, email, successUrl, cancelUrl } = await req.json()
 
@@ -49,6 +56,25 @@ serve(async (req) => {
     })
 
     console.log('Checkout session created:', session.id)
+
+    // Create pending transaction record in database
+    const { error: dbError } = await supabaseAdmin
+      .from('payments')
+      .insert({
+        user_id: userId,
+        payment_status: 'pending',
+        stripe_session_id: session.id,
+        amount: 2999, // $29.99 in cents
+        created_at: new Date().toISOString()
+      })
+
+    if (dbError) {
+      console.error('Error creating pending transaction:', dbError)
+      // Don't fail the checkout if database insert fails
+      // Transaction can still be tracked via webhook
+    } else {
+      console.log('Pending transaction created for user:', userId)
+    }
 
     return new Response(
       JSON.stringify({

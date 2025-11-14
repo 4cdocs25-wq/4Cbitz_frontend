@@ -216,56 +216,56 @@ const Documents = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-gray-100">
       {/* Hero Section */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-red-600 via-red-700 to-red-800 px-4 py-12 sm:px-6 lg:px-8">
+      <div className="relative overflow-hidden bg-gradient-to-r from-red-600 via-red-700 to-red-800 px-4 py-4 sm:py-6 md:py-8 sm:px-6 lg:px-8">
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="relative mx-auto max-w-7xl">
           {/* Back Button */}
           <button
             onClick={() => navigate('/')}
-            className="absolute top-0 left-0 flex items-center space-x-2 text-white/90 hover:text-white transition-all duration-300 group mb-8"
+            className="flex items-center space-x-2 text-white/90 hover:text-white transition-all duration-300 group mb-3 md:mb-4 md:absolute md:top-0 md:left-0"
           >
-            <svg className="w-6 h-6 transform group-hover:-translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 md:w-6 md:h-6 transform group-hover:-translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
-            <span className="font-medium">Back</span>
+            <span className="text-sm md:text-base font-medium">Back</span>
           </button>
 
           <div className="text-center">
-            <div className="flex items-center justify-center mb-6">
-              <div className="p-4 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20">
-                <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="flex items-center justify-center mb-3 md:mb-4">
+              <div className="p-2 md:p-3 bg-white/10 backdrop-blur-sm rounded-xl md:rounded-2xl border border-white/20">
+                <svg className="w-7 h-7 md:w-10 md:h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                 </svg>
               </div>
             </div>
-            <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
+            <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl md:text-4xl lg:text-5xl">
               Document Library
             </h1>
-            <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-red-100">
+            <p className="mx-auto mt-2 md:mt-4 max-w-2xl text-sm md:text-base lg:text-lg leading-6 md:leading-8 text-red-100 px-4">
               Your secure document collection awaits. Access premium content with complete privacy and security.
             </p>
           </div>
         </div>
 
-        {/* Animated background elements */}
-        <div className="absolute top-0 left-1/4 w-72 h-72 bg-red-500/20 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
-        <div className="absolute bottom-0 right-1/4 w-72 h-72 bg-red-400/20 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-2000"></div>
+        {/* Animated background elements - hidden on mobile */}
+        <div className="hidden md:block absolute top-0 left-1/4 w-72 h-72 bg-red-500/20 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
+        <div className="hidden md:block absolute bottom-0 right-1/4 w-72 h-72 bg-red-400/20 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-2000"></div>
       </div>
 
       {/* Info Banner */}
-      <div className="relative -mt-12 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mb-8">
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-2xl p-6 shadow-xl border border-white/20 backdrop-blur-sm">
+      <div className="relative mt-4 md:mt-2 lg:-mt-4 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mb-6 md:mb-8">
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl md:rounded-2xl p-4 md:p-6 shadow-xl border border-white/20 backdrop-blur-sm">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
-                <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <div className="w-8 h-8 md:w-10 md:h-10 bg-white/20 rounded-lg md:rounded-xl flex items-center justify-center">
+                <svg className="w-4 h-4 md:w-5 md:h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
                 </svg>
               </div>
             </div>
-            <div className="ml-4">
-              <p className="text-lg font-semibold">Access Granted!</p>
-              <p className="text-blue-100">You now have full access to all premium documents with complete security protection.</p>
+            <div className="ml-3 md:ml-4">
+              <p className="text-base md:text-lg font-semibold">Access Granted!</p>
+              <p className="text-sm md:text-base text-blue-100">You now have full access to all premium documents with complete security protection.</p>
             </div>
           </div>
         </div>
@@ -273,23 +273,40 @@ const Documents = () => {
 
       {/* Main Content */}
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-16">
-        <div className="flex gap-6">
-          {/* Folder Sidebar */}
-          <div className={`${showFolderSidebar ? 'w-64' : 'w-0'} transition-all duration-300 flex-shrink-0`}>
-            {showFolderSidebar && (
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/20 shadow-xl p-4 sticky top-4">
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Folder Sidebar - Drawer on Mobile, Fixed on Desktop */}
+          {/* Mobile Backdrop */}
+          {showFolderSidebar && (
+            <div
+              className="fixed inset-0 bg-black/50 z-40 lg:hidden transition-opacity duration-300"
+              onClick={() => setShowFolderSidebar(false)}
+            ></div>
+          )}
+
+          {/* Sidebar/Drawer */}
+          <div className={`
+            ${showFolderSidebar ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+            fixed lg:sticky top-0 left-0 h-screen lg:h-auto z-50 lg:z-0
+            w-80 max-w-[85vw] lg:w-64
+            lg:flex-shrink-0 lg:top-4
+            transition-transform duration-300 ease-in-out
+            ${!showFolderSidebar ? 'lg:w-0 lg:hidden' : ''}
+          `}>
+            {(showFolderSidebar || window.innerWidth >= 1024) && (
+              <div className="h-full lg:h-auto bg-white lg:bg-white/80 lg:backdrop-blur-sm rounded-none lg:rounded-2xl border-r lg:border border-gray-200 lg:border-white/20 shadow-2xl lg:shadow-xl p-4 overflow-y-auto">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-sm font-semibold text-gray-900">Browse by Folder</h3>
+                  <h3 className="text-base lg:text-sm font-semibold text-gray-900">Browse by Folder</h3>
                   <button
                     onClick={() => setShowFolderSidebar(false)}
-                    className="p-1 hover:bg-gray-100 rounded transition-colors lg:hidden"
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    aria-label="Close folder browser"
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   </button>
                 </div>
-                <div className="max-h-[600px] overflow-y-auto">
+                <div className="max-h-[calc(100vh-120px)] lg:max-h-[600px] overflow-y-auto">
                   <FolderTree
                     folders={folders}
                     selectedId={selectedFolder}
@@ -305,39 +322,28 @@ const Documents = () => {
           {/* Documents Area */}
           <div className="flex-1 min-w-0">
             {/* Breadcrumb & Search Section */}
-            <div className="bg-white/80 backdrop-blur-sm rounded-3xl border border-white/20 shadow-xl p-6 mb-8">
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl md:rounded-3xl border border-white/20 shadow-xl p-4 md:p-6 mb-6 md:mb-8">
               {/* Breadcrumb */}
               {folderPath.length > 0 && (
-                <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-4 pb-4 border-b border-gray-200">
+                <nav className="flex items-center space-x-2 text-xs md:text-sm text-gray-600 mb-4 pb-4 border-b border-gray-200 overflow-x-auto">
                   <button
                     onClick={() => setSelectedFolder(null)}
-                    className="hover:text-gray-900 transition-colors"
+                    className="hover:text-gray-900 transition-colors flex-shrink-0"
                   >
                     All Documents
                   </button>
                   {folderPath.map((folder, index) => (
                     <React.Fragment key={folder.id}>
-                      <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-3 h-3 md:w-4 md:h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
-                      <span className="font-medium text-gray-900">{folder.name}</span>
+                      <span className="font-medium text-gray-900 truncate max-w-[120px] md:max-w-none">{folder.name}</span>
                     </React.Fragment>
                   ))}
                 </nav>
               )}
 
-              <div className="flex flex-col sm:flex-row gap-4">
-                {!showFolderSidebar && (
-                  <button
-                    onClick={() => setShowFolderSidebar(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                    </svg>
-                    <span className="text-sm font-medium">Show Folders</span>
-                  </button>
-                )}
+              <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
                 <div className="flex-1 relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -349,10 +355,10 @@ const Documents = () => {
                     placeholder="Search documents..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-300"
+                    className="block w-full pl-10 pr-3 py-2.5 md:py-3 border border-gray-300 rounded-lg md:rounded-xl text-sm md:text-base leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-300"
                   />
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center justify-between sm:justify-end space-x-2">
                   <span className="text-sm font-medium text-gray-700">{filteredDocuments.length} documents</span>
                 </div>
               </div>
@@ -420,15 +426,15 @@ const Documents = () => {
             </div>
           </div>
         ) : (
-          <div className="grid mobile-grid-cols-1 sm-tablet-grid-cols-2 md-tablet-grid-cols-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
             {filteredDocuments.map((document, index) => (
               <div
                 key={document.id}
                 onClick={() => handleDocumentClick(document)}
-                className="group relative bg-white/80 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:scale-105 hover:-translate-y-2 mobile-min-h-44"
+                className="group relative bg-white/80 backdrop-blur-sm rounded-xl md:rounded-2xl border border-white/20 shadow-lg hover:shadow-2xl md:hover:scale-105 md:hover:-translate-y-2 active:scale-98 transition-all duration-300 cursor-pointer"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
-                <div className="p-4 sm:p-6">
+                <div className="p-4 md:p-6">
                   <div className="flex items-start justify-between mb-4">
                     {getFileTypeIcon(document.file_name)}
                     <div className="opacity-0 group-hover:opacity-100 transition-all duration-300">
@@ -512,6 +518,17 @@ const Documents = () => {
         )}
           </div>
         </div>
+
+        {/* Floating Action Button - Mobile Only */}
+        <button
+          onClick={() => setShowFolderSidebar(true)}
+          className="fixed bottom-6 right-6 z-30 lg:hidden p-4 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-110 active:scale-95"
+          aria-label="Open folder browser"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+          </svg>
+        </button>
       </div>
     </div>
   )

@@ -45,33 +45,30 @@ serve(async (req) => {
 
     console.log('Webhook event received:', event.type)
 
+    // Initialize Supabase client with service role key
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+    )
+
     // Handle checkout.session.completed event
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as Stripe.Checkout.Session
 
       console.log('Payment successful for session:', session.id)
 
-      // Initialize Supabase client with service role key
-      const supabaseAdmin = createClient(
-        Deno.env.get('SUPABASE_URL') ?? '',
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-      )
-
-      // Update or insert payment record
+      // Update existing pending transaction to completed
       const { error } = await supabaseAdmin
         .from('payments')
-        .upsert({
-          user_id: session.metadata?.userId || session.client_reference_id,
+        .update({
           payment_status: 'completed',
           stripe_payment_intent_id: session.payment_intent as string,
-          amount: session.amount_total,
-          created_at: new Date().toISOString(),
-        }, {
-          onConflict: 'user_id'
+          updated_at: new Date().toISOString(),
         })
+        .eq('stripe_session_id', session.id)
 
       if (error) {
-        console.error('Error updating payment:', error)
+        console.error('Error updating payment to completed:', error)
         return new Response(
           JSON.stringify({ error: 'Failed to update payment' }),
           {
@@ -81,7 +78,52 @@ serve(async (req) => {
         )
       }
 
-      console.log('Payment record updated successfully')
+      console.log('Payment record updated to completed successfully')
+    }
+
+    // Handle checkout.session.expired event
+    if (event.type === 'checkout.session.expired') {
+      const session = event.data.object as Stripe.Checkout.Session
+
+      console.log('Checkout session expired:', session.id)
+
+      // Update existing pending transaction to expired
+      const { error } = await supabaseAdmin
+        .from('payments')
+        .update({
+          payment_status: 'expired',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('stripe_session_id', session.id)
+
+      if (error) {
+        console.error('Error updating payment to expired:', error)
+      } else {
+        console.log('Payment record updated to expired successfully')
+      }
+    }
+
+    // Handle payment_intent.payment_failed event
+    if (event.type === 'payment_intent.payment_failed') {
+      const paymentIntent = event.data.object as Stripe.PaymentIntent
+
+      console.log('Payment failed for payment intent:', paymentIntent.id)
+
+      // Update transaction to failed status
+      const { error } = await supabaseAdmin
+        .from('payments')
+        .update({
+          payment_status: 'failed',
+          stripe_payment_intent_id: paymentIntent.id,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('stripe_payment_intent_id', paymentIntent.id)
+
+      if (error) {
+        console.error('Error updating payment to failed:', error)
+      } else {
+        console.log('Payment record updated to failed successfully')
+      }
     }
 
     return new Response(

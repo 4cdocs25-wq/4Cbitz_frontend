@@ -13,7 +13,7 @@ const Subscription = () => {
   const [isProcessing, setIsProcessing] = useState(false)
   const [hasSubscription, setHasSubscription] = useState(false)
   const [loading, setLoading] = useState(true)
-  const [price, setPrice] = useState('29.99')
+  const [price, setPrice] = useState(null)
 
   useEffect(() => {
     checkSubscriptionStatus()
@@ -71,7 +71,7 @@ const Subscription = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-gray-100">
       {/* Hero Section */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-red-600 via-red-700 to-red-800 px-4 py-16 sm:px-6 lg:px-8">
+      <div className="relative overflow-hidden bg-gradient-to-r from-red-600 via-red-700 to-red-800 px-4 py-10 md:py-12 sm:px-6 lg:px-8">
         <div className="absolute inset-0 bg-black/20"></div>
 
         {/* Animated background elements */}
@@ -79,17 +79,17 @@ const Subscription = () => {
         <div className="absolute bottom-0 right-1/4 w-72 h-72 bg-red-400/20 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-2000"></div>
 
         <div className="relative z-10 mx-auto max-w-7xl text-center">
-          <div className="flex items-center justify-center mb-6">
-            <div className="p-4 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20">
+          <div className="flex items-center justify-center mb-4">
+            <div className="p-3 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20">
               <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
           </div>
-          <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
+          <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl">
             Unlock Premium Access
           </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-red-100">
+          <p className="mx-auto mt-4 max-w-2xl text-lg leading-8 text-red-100">
             Get lifetime access to all business setup documents and resources
           </p>
         </div>
@@ -109,7 +109,7 @@ const Subscription = () => {
             <div className="text-center mb-10">
               <div className="inline-block bg-gradient-to-r from-red-600 to-red-700 rounded-2xl px-8 py-6 mb-6">
                 <div className="text-5xl sm:text-6xl font-bold text-white mb-2">
-                  ${price}
+                  {price ? `$${price}` : '$00.00'}
                 </div>
                 <div className="text-red-100 text-lg">One-time payment</div>
               </div>

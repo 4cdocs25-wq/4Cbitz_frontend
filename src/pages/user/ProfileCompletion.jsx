@@ -121,20 +121,20 @@ const ProfileCompletion = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-gray-100">
       {/* Hero Section */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-red-600 via-red-700 to-red-800 px-4 py-12 sm:px-6 lg:px-8">
+      <div className="relative overflow-hidden bg-gradient-to-r from-red-600 via-red-700 to-red-800 px-4 py-8 md:py-10 sm:px-6 lg:px-8">
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="relative mx-auto max-w-3xl text-center">
-          <div className="flex items-center justify-center mb-6">
-            <div className="p-4 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20">
+          <div className="flex items-center justify-center mb-4">
+            <div className="p-3 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20">
               <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
             </div>
           </div>
-          <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
+          <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl">
             Complete Your Profile
           </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-red-100">
+          <p className="mx-auto mt-4 max-w-2xl text-lg leading-8 text-red-100">
             We need a few more details to personalize your experience and provide you with the best service.
           </p>
         </div>
@@ -145,7 +145,7 @@ const ProfileCompletion = () => {
       </div>
 
       {/* Form Section */}
-      <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-16">
+      <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 pt-8 pb-16">
         <div className="bg-white/80 backdrop-blur-sm rounded-3xl border border-white/20 shadow-xl p-8 sm:p-12">
           {error && (
             <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg">

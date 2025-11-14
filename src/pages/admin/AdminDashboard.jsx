@@ -173,7 +173,7 @@ const AdminDashboard = () => {
                 <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <Link
-                    to="/admin/upload"
+                    to="/admin/documents"
                     className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow"
                   >
                     <div className="flex items-center gap-4">

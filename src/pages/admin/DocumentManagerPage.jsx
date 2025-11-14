@@ -237,8 +237,8 @@ const DocumentManagerPage = () => {
     <div className="flex h-screen bg-gray-50">
       {/* Left Panel - Folder Tree */}
       <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
-        <div className="p-4 border-b border-gray-200">
-          <div className="flex items-center justify-between mb-4">
+        <div className="p-8 pb-4 border-b border-gray-200">
+          <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">Folders</h2>
             <button
               onClick={() => {
@@ -269,30 +269,35 @@ const DocumentManagerPage = () => {
 
       {/* Right Panel - Documents */}
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-6xl mx-auto p-8">
-          {/* Breadcrumb */}
-          {folderPath.length > 0 && (
-            <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-6">
-              <button
-                onClick={() => setSelectedFolder(null)}
-                className="hover:text-gray-900 transition-colors"
-              >
-                All Documents
-              </button>
-              {folderPath.map((folder, index) => (
-                <React.Fragment key={folder.id}>
-                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                  <span className="font-medium text-gray-900">{folder.name}</span>
-                </React.Fragment>
-              ))}
-            </nav>
-          )}
+        <div className="max-w-6xl mx-auto">
+          {/* Header Section */}
+          <div className="p-8 pb-0">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Upload Document</h3>
+
+            {/* Breadcrumb */}
+            {folderPath.length > 0 && (
+              <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-4">
+                <button
+                  onClick={() => setSelectedFolder(null)}
+                  className="hover:text-gray-900 transition-colors"
+                >
+                  All Documents
+                </button>
+                {folderPath.map((folder, index) => (
+                  <React.Fragment key={folder.id}>
+                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                    <span className="font-medium text-gray-900">{folder.name}</span>
+                  </React.Fragment>
+                ))}
+              </nav>
+            )}
+          </div>
 
           {/* Upload Form */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Upload Document</h3>
+          <div className="px-8 pb-8">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
             <form onSubmit={handleUpload} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -353,10 +358,12 @@ const DocumentManagerPage = () => {
                 {uploading ? 'Uploading...' : 'Upload Document'}
               </button>
             </form>
+            </div>
           </div>
 
           {/* Documents List */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+          <div className="px-8 pb-8">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200">
             <div className="p-6 border-b border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900">
                 Documents {selectedFolder ? 'in this folder' : ''}
@@ -470,6 +477,7 @@ const DocumentManagerPage = () => {
           </div>
         </div>
       </div>
+    </div>
 
       {/* Context Menu */}
       {contextMenu && (
