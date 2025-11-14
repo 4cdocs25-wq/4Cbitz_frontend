@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
-import { authAPI } from '../../api';
+import React, { useState, useEffect } from 'react';
+import { authAPI, settingsAPI } from '../../api';
 import AdminSidebar from '../../components/admin/AdminSidebar';
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
 
 const AdminSettingsPage = () => {
   const [passwordData, setPasswordData] = useState({
@@ -10,6 +12,33 @@ const AdminSettingsPage = () => {
   });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
+
+  // Policy management state
+  const [policyData, setPolicyData] = useState({
+    termsOfService: '',
+    privacyPolicy: ''
+  });
+  const [termsLoading, setTermsLoading] = useState(false);
+  const [privacyLoading, setPrivacyLoading] = useState(false);
+  const [policyMessage, setPolicyMessage] = useState({ type: '', text: '' });
+
+  // Quill editor configuration
+  const quillModules = {
+    toolbar: [
+      [{ 'header': [1, 2, 3, false] }],
+      ['bold', 'italic', 'underline'],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      ['link'],
+      ['clean']
+    ],
+  };
+
+  const quillFormats = [
+    'header',
+    'bold', 'italic', 'underline',
+    'list', 'bullet',
+    'link'
+  ];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -59,6 +88,102 @@ const AdminSettingsPage = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Fetch current policy values on component mount
+  useEffect(() => {
+    const fetchPolicies = async () => {
+      try {
+        const [termsResponse, privacyResponse] = await Promise.all([
+          settingsAPI.getByKey('terms_of_service'),
+          settingsAPI.getByKey('privacy_policy')
+        ]);
+
+        setPolicyData({
+          termsOfService: termsResponse.data?.value || '',
+          privacyPolicy: privacyResponse.data?.value || ''
+        });
+      } catch (error) {
+        console.error('Error fetching policies:', error);
+      }
+    };
+
+    fetchPolicies();
+  }, []);
+
+  const handlePolicyChange = (e) => {
+    const { name, value } = e.target;
+    setPolicyData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    setPolicyMessage({ type: '', text: '' });
+  };
+
+  const handleTermsChange = (value) => {
+    setPolicyData(prev => ({
+      ...prev,
+      termsOfService: value
+    }));
+    setPolicyMessage({ type: '', text: '' });
+  };
+
+  const handlePrivacyChange = (value) => {
+    setPolicyData(prev => ({
+      ...prev,
+      privacyPolicy: value
+    }));
+    setPolicyMessage({ type: '', text: '' });
+  };
+
+  const handleTermsSubmit = async () => {
+    setTermsLoading(true);
+    setPolicyMessage({ type: '', text: '' });
+
+    try {
+      const response = await settingsAPI.update('terms_of_service', policyData.termsOfService);
+
+      if (response.success) {
+        setPolicyMessage({
+          type: 'success',
+          text: 'Terms of Service updated successfully!'
+        });
+      } else {
+        setPolicyMessage({ type: 'error', text: response.message || 'Failed to update Terms of Service' });
+      }
+    } catch (error) {
+      setPolicyMessage({
+        type: 'error',
+        text: error.response?.data?.message || 'Failed to update Terms of Service'
+      });
+    } finally {
+      setTermsLoading(false);
+    }
+  };
+
+  const handlePrivacySubmit = async () => {
+    setPrivacyLoading(true);
+    setPolicyMessage({ type: '', text: '' });
+
+    try {
+      const response = await settingsAPI.update('privacy_policy', policyData.privacyPolicy);
+
+      if (response.success) {
+        setPolicyMessage({
+          type: 'success',
+          text: 'Privacy Policy updated successfully!'
+        });
+      } else {
+        setPolicyMessage({ type: 'error', text: response.message || 'Failed to update Privacy Policy' });
+      }
+    } catch (error) {
+      setPolicyMessage({
+        type: 'error',
+        text: error.response?.data?.message || 'Failed to update Privacy Policy'
+      });
+    } finally {
+      setPrivacyLoading(false);
     }
   };
 
@@ -200,6 +325,93 @@ const AdminSettingsPage = () => {
               <li>Both passwords must match</li>
               <li>Choose a strong, unique password</li>
             </ul>
+          </div>
+
+          {/* Legal Documents Section */}
+          <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-200">
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-xl font-semibold text-gray-900">Legal Documents</h2>
+              <p className="text-sm text-gray-600 mt-1">Manage Terms of Service and Privacy Policy content</p>
+            </div>
+
+            <div className="p-6 space-y-8">
+              {/* Message */}
+              {policyMessage.text && (
+                <div
+                  className={`px-4 py-3 rounded-lg text-sm ${
+                    policyMessage.type === 'success'
+                      ? 'bg-green-50 border border-green-200 text-green-700'
+                      : 'bg-red-50 border border-red-200 text-red-700'
+                  }`}
+                >
+                  {policyMessage.text}
+                </div>
+              )}
+
+              {/* Terms of Service */}
+              <div>
+                <label htmlFor="termsOfService" className="block text-sm font-medium text-gray-700 mb-2">
+                  Terms of Service
+                </label>
+                <div className="bg-white rounded-lg border border-gray-300">
+                  <ReactQuill
+                    theme="snow"
+                    value={policyData.termsOfService}
+                    onChange={handleTermsChange}
+                    modules={quillModules}
+                    formats={quillFormats}
+                    placeholder="Enter Terms of Service content..."
+                    readOnly={termsLoading}
+                    className="min-h-[300px]"
+                  />
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  Use the toolbar above to format your content - headings, bold, lists, etc.
+                </p>
+                <div className="mt-4">
+                  <button
+                    type="button"
+                    onClick={handleTermsSubmit}
+                    disabled={termsLoading}
+                    className="px-6 py-2.5 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors shadow-sm hover:shadow-md"
+                  >
+                    {termsLoading ? 'Saving...' : 'Save Terms of Service'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Privacy Policy */}
+              <div>
+                <label htmlFor="privacyPolicy" className="block text-sm font-medium text-gray-700 mb-2">
+                  Privacy Policy
+                </label>
+                <div className="bg-white rounded-lg border border-gray-300">
+                  <ReactQuill
+                    theme="snow"
+                    value={policyData.privacyPolicy}
+                    onChange={handlePrivacyChange}
+                    modules={quillModules}
+                    formats={quillFormats}
+                    placeholder="Enter Privacy Policy content..."
+                    readOnly={privacyLoading}
+                    className="min-h-[300px]"
+                  />
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  Use the toolbar above to format your content - headings, bold, lists, etc.
+                </p>
+                <div className="mt-4">
+                  <button
+                    type="button"
+                    onClick={handlePrivacySubmit}
+                    disabled={privacyLoading}
+                    className="px-6 py-2.5 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors shadow-sm hover:shadow-md"
+                  >
+                    {privacyLoading ? 'Saving...' : 'Save Privacy Policy'}
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

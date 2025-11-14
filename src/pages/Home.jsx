@@ -2,6 +2,8 @@ import React, { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../contexts/AuthContext';
+import { settingsAPI } from '../api';
+import PolicyModal from '../components/PolicyModal';
 
 const Home = () => {
   const { handleGoogleLogin, user } = useAuth();
@@ -9,6 +11,8 @@ const Home = () => {
   const loginSectionRef = useRef(null);
   const [isShaking, setIsShaking] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(true);
+  const [policyModal, setPolicyModal] = useState({ isOpen: false, title: '', content: '' });
 
   const onGoogleSuccess = async (credentialResponse) => {
     setIsLoggingIn(true); // Show loader
@@ -50,6 +54,30 @@ const Home = () => {
       // (Documents page will handle payment check and redirect to /subscription if needed)
       navigate('/documents');
     }
+  };
+
+  const handlePolicyClick = async (policyType) => {
+    try {
+      const key = policyType === 'terms' ? 'terms_of_service' : 'privacy_policy';
+      const title = policyType === 'terms' ? 'Terms of Service' : 'Privacy Policy';
+
+      const response = await settingsAPI.getPublicByKey(key);
+
+      if (response.success && response.data) {
+        setPolicyModal({
+          isOpen: true,
+          title: title,
+          content: response.data.value
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching policy:', error);
+      alert('Failed to load policy. Please try again.');
+    }
+  };
+
+  const closePolicyModal = () => {
+    setPolicyModal({ isOpen: false, title: '', content: '' });
   };
 
   return (
@@ -110,8 +138,43 @@ const Home = () => {
                 </div>
 
                 <div className="space-y-4 lg:space-y-6">
+                  {/* Terms Acceptance Checkbox */}
+                  <div className="flex items-start gap-3 px-2">
+                    <input
+                      type="checkbox"
+                      id="acceptTerms"
+                      checked={acceptedTerms}
+                      onChange={(e) => setAcceptedTerms(e.target.checked)}
+                      className="mt-0.5 w-5 h-5 rounded border-2 border-white bg-white/20 text-red-600 focus:ring-2 focus:ring-white/50 cursor-pointer flex-shrink-0"
+                    />
+                    <label htmlFor="acceptTerms" className="text-white text-xs lg:text-sm leading-relaxed">
+                      I agree to the{' '}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handlePolicyClick('terms');
+                        }}
+                        className="font-bold underline hover:text-white/80 transition-colors"
+                      >
+                        Terms of Service
+                      </button>
+                      {' '}and{' '}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handlePolicyClick('privacy');
+                        }}
+                        className="font-bold underline hover:text-white/80 transition-colors"
+                      >
+                        Privacy Policy
+                      </button>
+                    </label>
+                  </div>
+
                   {/* Google Login Button */}
-                  <div className="flex justify-center">
+                  <div className={`flex justify-center ${!acceptedTerms ? 'opacity-50 pointer-events-none' : ''}`}>
                     <GoogleLogin
                       onSuccess={onGoogleSuccess}
                       onError={onGoogleError}
@@ -120,12 +183,6 @@ const Home = () => {
                       text="continue_with"
                       shape="pill"
                     />
-                  </div>
-
-                  <div className="bg-white/10 rounded-lg p-3 lg:p-4 backdrop-blur-sm">
-                    <p className="text-white/90 text-xs lg:text-sm text-center leading-relaxed">
-                      By signing in, you agree to our Terms of Service and Privacy Policy
-                    </p>
                   </div>
                 </div>
               </div>
@@ -236,6 +293,14 @@ const Home = () => {
           </div>
         </div>
       )}
+
+      {/* Policy Modal */}
+      <PolicyModal
+        isOpen={policyModal.isOpen}
+        onClose={closePolicyModal}
+        title={policyModal.title}
+        content={policyModal.content}
+      />
     </>
   );
 };
