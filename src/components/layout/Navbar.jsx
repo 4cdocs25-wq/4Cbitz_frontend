@@ -1,12 +1,36 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
+import { usersAPI } from '../../api'
 
 const Navbar = () => {
   const { user, userRole, handleLogout } = useAuth()
   const navigate = useNavigate()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isSigningOut, setIsSigningOut] = useState(false)
+  const [hasSubscription, setHasSubscription] = useState(false)
+
+  // Check if user has subscription
+  useEffect(() => {
+    const checkSubscription = async () => {
+      if (user && userRole === 'user') {
+        try {
+          const response = await usersAPI.getPurchases()
+          if (response.success && response.data.length > 0) {
+            setHasSubscription(true)
+          } else {
+            setHasSubscription(false)
+          }
+        } catch (error) {
+          setHasSubscription(false)
+        }
+      } else {
+        setHasSubscription(false)
+      }
+    }
+
+    checkSubscription()
+  }, [user, userRole])
 
   const handleSignOut = async () => {
     if (isSigningOut) return // Prevent double-clicks
@@ -91,9 +115,9 @@ const Navbar = () => {
                     </span>
                   </Link>
                 )}
-                {userRole === 'user' && (
-                  <Link 
-                    to="/documents" 
+                {userRole === 'user' && hasSubscription && (
+                  <Link
+                    to="/documents"
                     className="group relative bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white px-3 lg:px-6 py-2 rounded-xl text-xs lg:text-sm font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-lg mobile-min-h-44"
                   >
                     <span className="relative z-10 flex items-center">
@@ -162,9 +186,9 @@ const Navbar = () => {
                   Admin Panel
                 </Link>
               )}
-              {userRole === 'user' && (
-                <Link 
-                  to="/documents" 
+              {userRole === 'user' && hasSubscription && (
+                <Link
+                  to="/documents"
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="block w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white px-4 py-3 rounded-xl text-sm font-semibold text-center transition-all duration-300 transform hover:scale-105 mobile-min-h-44 flex items-center justify-center"
                 >

@@ -99,6 +99,12 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Set auth data (for manual login like email/password)
+  const setAuthData = (userData, role) => {
+    setUser(userData);
+    setUserRole(role);
+  };
+
   // Helper flags
   const isAdmin = userRole === 'admin';
   const isUser = userRole === 'user';
@@ -114,6 +120,7 @@ export const AuthProvider = ({ children }) => {
     handleGoogleLogin,
     handleLogout,
     checkAuth,
+    setAuthData,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

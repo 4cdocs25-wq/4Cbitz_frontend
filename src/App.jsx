@@ -3,12 +3,14 @@ import { AuthProvider } from './contexts/AuthContext'
 import Layout from './components/layout/Layout'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 import Home from './pages/Home'
+import AdminLogin from './pages/auth/AdminLogin'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import DocumentManagerPage from './pages/admin/DocumentManagerPage'
 import AdminDocumentViewer from './pages/admin/AdminDocumentViewer'
 import TransactionsPage from './pages/admin/TransactionsPage'
 import UsersManagementPage from './pages/admin/UsersManagementPage'
 import PricingPage from './pages/admin/PricingPage'
+import AdminSettingsPage from './pages/admin/AdminSettingsPage'
 import UserDashboard from './pages/user/UserDashboard'
 import Subscription from './pages/user/Subscription'
 import Documents from './pages/user/Documents'
@@ -22,6 +24,9 @@ const App = () => {
         <Layout>
           <Routes>
             <Route path="/" element={<Home />} />
+
+            {/* Admin Login (Public) */}
+            <Route path="/admin/login" element={<AdminLogin />} />
 
             {/* Admin Routes */}
             <Route
@@ -69,6 +74,14 @@ const App = () => {
               element={
                 <ProtectedRoute requiredRole="admin">
                   <PricingPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/settings"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminSettingsPage />
                 </ProtectedRoute>
               }
             />

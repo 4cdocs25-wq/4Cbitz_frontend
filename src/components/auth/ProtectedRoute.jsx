@@ -44,6 +44,10 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
   }
 
   if (!user) {
+    // Redirect to admin login if trying to access admin routes
+    if (requiredRole === 'admin') {
+      return <Navigate to="/admin/login" />
+    }
     return <Navigate to="/" />
   }
 

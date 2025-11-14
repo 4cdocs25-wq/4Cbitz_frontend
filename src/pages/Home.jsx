@@ -122,15 +122,6 @@ const Home = () => {
                     />
                   </div>
 
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-white/30"></div>
-                    </div>
-                    <div className="relative flex justify-center text-xs lg:text-sm">
-                      <span className="px-3 lg:px-4 bg-red-600 text-white/70">Secure & Fast</span>
-                    </div>
-                  </div>
-
                   <div className="bg-white/10 rounded-lg p-3 lg:p-4 backdrop-blur-sm">
                     <p className="text-white/90 text-xs lg:text-sm text-center leading-relaxed">
                       By signing in, you agree to our Terms of Service and Privacy Policy
