@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { authAPI, settingsAPI } from '../../api';
-import AdminSidebar from '../../components/admin/AdminSidebar';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 
@@ -12,6 +11,7 @@ const AdminSettingsPage = () => {
   });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
+  const [activeTab, setActiveTab] = useState('security');
 
   // Policy management state
   const [policyData, setPolicyData] = useState({
@@ -188,10 +188,7 @@ const AdminSettingsPage = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <AdminSidebar />
-
-      <div className="flex-1 p-8">
+    <div className="p-8 overflow-y-auto h-screen">
         <div className="max-w-4xl mx-auto">
           {/* Page Header */}
           <div className="mb-8">
@@ -199,7 +196,39 @@ const AdminSettingsPage = () => {
             <p className="mt-2 text-gray-600">Manage your account settings and preferences</p>
           </div>
 
+          {/* Tab Navigation */}
+          <div className="flex gap-2 border-b border-gray-200 mb-6">
+            <button
+              onClick={() => setActiveTab('security')}
+              className={`flex items-center gap-2 px-6 py-3 font-semibold transition-all duration-200 border-b-2 ${
+                activeTab === 'security'
+                  ? 'border-[#B12417] text-[#B12417]'
+                  : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+              }`}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+              Security
+            </button>
+            <button
+              onClick={() => setActiveTab('legal')}
+              className={`flex items-center gap-2 px-6 py-3 font-semibold transition-all duration-200 border-b-2 ${
+                activeTab === 'legal'
+                  ? 'border-[#B12417] text-[#B12417]'
+                  : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+              }`}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Legal Documents
+            </button>
+          </div>
+
           {/* Security Section */}
+          {activeTab === 'security' && (
+            <>
           <div className="bg-white rounded-xl shadow-sm border border-gray-200">
             <div className="p-6 border-b border-gray-200">
               <h2 className="text-xl font-semibold text-gray-900">Security</h2>
@@ -326,9 +355,12 @@ const AdminSettingsPage = () => {
               <li>Choose a strong, unique password</li>
             </ul>
           </div>
+          </>
+          )}
 
           {/* Legal Documents Section */}
-          <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-200">
+          {activeTab === 'legal' && (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200">
             <div className="p-6 border-b border-gray-200">
               <h2 className="text-xl font-semibold text-gray-900">Legal Documents</h2>
               <p className="text-sm text-gray-600 mt-1">Manage Terms of Service and Privacy Policy content</p>
@@ -413,9 +445,9 @@ const AdminSettingsPage = () => {
               </div>
             </div>
           </div>
+          )}
         </div>
       </div>
-    </div>
   );
 };
 

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { settingsAPI } from '../../api';
-import AdminSidebar from '../../components/admin/AdminSidebar';
 
 const PricingPage = () => {
   const [price, setPrice] = useState('');
@@ -74,10 +73,7 @@ const PricingPage = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
-      <AdminSidebar />
-
-      <div className="flex-1 p-8 overflow-y-auto">
+    <div className="p-8 overflow-y-auto h-screen">
         <div className="max-w-4xl mx-auto">
           {/* Page Header */}
           <div className="mb-8">
@@ -204,7 +200,6 @@ const PricingPage = () => {
           )}
         </div>
       </div>
-    </div>
   );
 };
 

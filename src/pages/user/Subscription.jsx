@@ -18,6 +18,7 @@ const Subscription = () => {
   useEffect(() => {
     checkSubscriptionStatus()
     fetchPrice()
+    handleCancelledPayment()
   }, [])
 
   const fetchPrice = async () => {
@@ -29,6 +30,24 @@ const Subscription = () => {
     } catch (error) {
       console.error('Error fetching price:', error)
       // Keep default price of 29.99 if fetch fails
+    }
+  }
+
+  const handleCancelledPayment = async () => {
+    const params = new URLSearchParams(window.location.search)
+    const sessionId = params.get('session_id')
+    const status = params.get('status')
+
+    if (sessionId && status === 'cancelled') {
+      try {
+        // Verify payment will mark it as failed
+        const result = await paymentsAPI.verifyPayment(sessionId)
+
+        // Clean up URL
+        window.history.replaceState({}, '', '/subscription')
+      } catch (error) {
+        console.error('Error handling cancelled payment:', error)
+      }
     }
   }
 
@@ -71,12 +90,12 @@ const Subscription = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-gray-100">
       {/* Hero Section */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-red-600 via-red-700 to-red-800 px-4 py-10 md:py-12 sm:px-6 lg:px-8">
+      <div className="relative overflow-hidden bg-gradient-to-r from-[#B12417] via-[#9a1f13] to-[#821a10] px-4 py-10 md:py-12 sm:px-6 lg:px-8">
         <div className="absolute inset-0 bg-black/20"></div>
 
         {/* Animated background elements */}
-        <div className="absolute top-0 left-1/4 w-72 h-72 bg-red-500/20 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
-        <div className="absolute bottom-0 right-1/4 w-72 h-72 bg-red-400/20 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-2000"></div>
+        <div className="absolute top-0 left-1/4 w-72 h-72 bg-[#B12417]/20 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
+        <div className="absolute bottom-0 right-1/4 w-72 h-72 bg-[#9a1f13]/20 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-2000"></div>
 
         <div className="relative z-10 mx-auto max-w-7xl text-center">
           <div className="flex items-center justify-center mb-4">
@@ -89,7 +108,7 @@ const Subscription = () => {
           <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl">
             Unlock Premium Access
           </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-lg leading-8 text-red-100">
+          <p className="mx-auto mt-4 max-w-2xl text-lg leading-8 text-white/90">
             Get lifetime access to all business setup documents and resources
           </p>
         </div>
@@ -100,18 +119,18 @@ const Subscription = () => {
         {/* Pricing Card */}
         <div className="bg-white/90 backdrop-blur-sm rounded-3xl border-2 border-white/20 shadow-2xl overflow-hidden">
           {/* Ribbon */}
-          <div className="bg-gradient-to-r from-red-600 to-red-700 text-white py-3 px-6 text-center">
+          <div className="bg-gradient-to-r from-[#B12417] to-[#9a1f13] text-white py-3 px-6 text-center">
             <p className="text-sm font-semibold">🎉 One-Time Payment • Lifetime Access • No Recurring Fees</p>
           </div>
 
           <div className="p-8 sm:p-12">
             {/* Price */}
             <div className="text-center mb-10">
-              <div className="inline-block bg-gradient-to-r from-red-600 to-red-700 rounded-2xl px-8 py-6 mb-6">
+              <div className="inline-block bg-gradient-to-r from-[#B12417] to-[#9a1f13] rounded-2xl px-8 py-6 mb-6">
                 <div className="text-5xl sm:text-6xl font-bold text-white mb-2">
                   {price ? `$${price}` : '$00.00'}
                 </div>
-                <div className="text-red-100 text-lg">One-time payment</div>
+                <div className="text-white/90 text-lg">One-time payment</div>
               </div>
               <p className="text-gray-600 text-lg">Lifetime access • No hidden fees</p>
             </div>
@@ -237,7 +256,7 @@ const Subscription = () => {
                     className={`w-full font-bold py-4 px-6 rounded-xl text-lg transition-all duration-300 transform shadow-lg ${
                       isProcessing
                         ? 'bg-gray-400 cursor-not-allowed'
-                        : 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 hover:scale-105 hover:shadow-xl text-white'
+                        : 'bg-gradient-to-r from-[#B12417] to-[#9a1f13] hover:from-[#9a1f13] hover:to-[#821a10] hover:scale-105 hover:shadow-xl text-white'
                     }`}
                   >
                     {isProcessing ? (

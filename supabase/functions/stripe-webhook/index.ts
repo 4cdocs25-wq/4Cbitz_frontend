@@ -109,20 +109,72 @@ serve(async (req) => {
 
       console.log('Payment failed for payment intent:', paymentIntent.id)
 
-      // Update transaction to failed status
+      // Try to find the checkout session for this payment intent
+      try {
+        const sessions = await stripe.checkout.sessions.list({
+          payment_intent: paymentIntent.id,
+          limit: 1
+        })
+
+        if (sessions.data.length > 0) {
+          const sessionId = sessions.data[0].id
+
+          // Update transaction using session_id
+          const { error } = await supabaseAdmin
+            .from('payments')
+            .update({
+              payment_status: 'failed',
+              stripe_payment_intent_id: paymentIntent.id,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('stripe_session_id', sessionId)
+
+          if (error) {
+            console.error('Error updating payment to failed:', error)
+          } else {
+            console.log('Payment record updated to failed successfully via session lookup')
+          }
+        } else {
+          // Fallback: try matching by payment_intent_id directly
+          const { error } = await supabaseAdmin
+            .from('payments')
+            .update({
+              payment_status: 'failed',
+              stripe_payment_intent_id: paymentIntent.id,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('stripe_payment_intent_id', paymentIntent.id)
+
+          if (error) {
+            console.error('Error updating payment to failed (fallback):', error)
+          } else {
+            console.log('Payment record updated to failed successfully (fallback)')
+          }
+        }
+      } catch (error) {
+        console.error('Error looking up session for failed payment:', error)
+      }
+    }
+
+    // Handle checkout.session.async_payment_failed event
+    if (event.type === 'checkout.session.async_payment_failed') {
+      const session = event.data.object as Stripe.Checkout.Session
+
+      console.log('Async payment failed for session:', session.id)
+
+      // Update existing pending transaction to failed
       const { error } = await supabaseAdmin
         .from('payments')
         .update({
           payment_status: 'failed',
-          stripe_payment_intent_id: paymentIntent.id,
           updated_at: new Date().toISOString(),
         })
-        .eq('stripe_payment_intent_id', paymentIntent.id)
+        .eq('stripe_session_id', session.id)
 
       if (error) {
-        console.error('Error updating payment to failed:', error)
+        console.error('Error updating async payment to failed:', error)
       } else {
-        console.log('Payment record updated to failed successfully')
+        console.log('Async payment updated to failed successfully')
       }
     }
 

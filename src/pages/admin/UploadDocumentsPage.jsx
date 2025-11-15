@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { documentsAPI } from '../../api';
 import DocumentUpload from '../../components/admin/DocumentUpload';
 import DocumentList from '../../components/admin/DocumentList';
-import AdminSidebar from '../../components/admin/AdminSidebar';
 
 const UploadDocumentsPage = () => {
   const [documents, setDocuments] = useState([]);
@@ -37,10 +36,7 @@ const UploadDocumentsPage = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <AdminSidebar />
-
-      <div className="flex-1 p-8">
+    <div className="p-8 overflow-y-auto h-screen">
         <div className="max-w-6xl mx-auto">
           {/* Page Header */}
           <div className="mb-8">
@@ -108,7 +104,6 @@ const UploadDocumentsPage = () => {
           </div>
         </div>
       </div>
-    </div>
   );
 };
 

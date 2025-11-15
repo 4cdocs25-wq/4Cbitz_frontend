@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { paymentsAPI } from '../../api';
-import AdminSidebar from '../../components/admin/AdminSidebar';
 import TransactionsList from '../../components/admin/TransactionsList';
 
 const TransactionsPage = () => {
@@ -94,10 +93,7 @@ const TransactionsPage = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
-      <AdminSidebar />
-
-      <div className="flex-1 p-8 overflow-y-auto">
+    <div className="py-8 px-4 md:px-8">
         <div className="max-w-7xl mx-auto">
           {/* Page Header */}
           <div className="mb-8">
@@ -231,24 +227,23 @@ const TransactionsPage = () => {
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Transactions List */}
-          <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-900">Transaction History</h2>
-              <p className="text-sm text-gray-600 mt-1">View all payment transactions</p>
-            </div>
-
-            <TransactionsList
-              transactions={transactions}
-              loading={loading}
-              hasMore={pagination.hasMore}
-              onLoadMore={handleLoadMore}
-            />
+        {/* Transactions List - Outside max-w-7xl */}
+        <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h2 className="text-lg font-semibold text-gray-900">Transaction History</h2>
+            <p className="text-sm text-gray-600 mt-1">View all payment transactions</p>
           </div>
+
+          <TransactionsList
+            transactions={transactions}
+            loading={loading}
+            hasMore={pagination.hasMore}
+            onLoadMore={handleLoadMore}
+          />
         </div>
       </div>
-    </div>
   );
 };
 

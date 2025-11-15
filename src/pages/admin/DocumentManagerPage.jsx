@@ -234,10 +234,11 @@ const DocumentManagerPage = () => {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      {/* Left Panel - Folder Tree */}
-      <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
-        <div className="p-8 pb-4 border-b border-gray-200">
+    <div className="p-8 overflow-y-auto h-screen">
+      <div className="flex gap-6 h-full overflow-hidden">
+        {/* Left Panel - Folder Tree */}
+        <div className="w-64 bg-white border border-gray-200 rounded-xl shadow-sm flex flex-col flex-shrink-0 overflow-hidden">
+        <div className="p-6 pb-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">Folders</h2>
             <button
@@ -268,10 +269,10 @@ const DocumentManagerPage = () => {
       </div>
 
       {/* Right Panel - Documents */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="max-w-6xl mx-auto">
+      <div className="flex-1 overflow-y-auto bg-white border border-gray-200 rounded-xl shadow-sm">
+        <div className="p-6">
           {/* Header Section */}
-          <div className="p-8 pb-0">
+          <div className="pb-0">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Upload Document</h3>
 
             {/* Breadcrumb */}
@@ -296,7 +297,7 @@ const DocumentManagerPage = () => {
           </div>
 
           {/* Upload Form */}
-          <div className="px-8 pb-8">
+          <div className="pb-8">
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
             <form onSubmit={handleUpload} className="space-y-4">
               <div>
@@ -362,7 +363,7 @@ const DocumentManagerPage = () => {
           </div>
 
           {/* Documents List */}
-          <div className="px-8 pb-8">
+          <div className="pb-8">
             <div className="bg-white rounded-xl shadow-sm border border-gray-200">
             <div className="p-6 border-b border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900">
@@ -476,6 +477,7 @@ const DocumentManagerPage = () => {
             </div>
           </div>
         </div>
+      </div>
       </div>
     </div>
 

@@ -178,8 +178,8 @@ const Documents = () => {
     switch (extension) {
       case 'pdf':
         return (
-          <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
-            <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="w-12 h-12 bg-[#B12417]/10 rounded-xl flex items-center justify-center">
+            <svg className="w-6 h-6 text-[#B12417]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
             </svg>
           </div>
@@ -187,8 +187,8 @@ const Documents = () => {
       case 'doc':
       case 'docx':
         return (
-          <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-            <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="w-12 h-12 bg-[#2B266F]/10 rounded-xl flex items-center justify-center">
+            <svg className="w-6 h-6 text-[#2B266F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
           </div>
@@ -216,7 +216,7 @@ const Documents = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-gray-100">
       {/* Hero Section */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-red-600 via-red-700 to-red-800 px-4 py-4 sm:py-6 md:py-8 sm:px-6 lg:px-8">
+      <div className="relative overflow-hidden bg-gradient-to-r from-[#B12417] via-[#9a1f13] to-[#821a10] px-4 py-4 sm:py-6 md:py-8 sm:px-6 lg:px-8">
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="relative mx-auto max-w-7xl">
           {/* Back Button */}
@@ -241,20 +241,20 @@ const Documents = () => {
             <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl md:text-4xl lg:text-5xl">
               Document Library
             </h1>
-            <p className="mx-auto mt-2 md:mt-4 max-w-2xl text-sm md:text-base lg:text-lg leading-6 md:leading-8 text-red-100 px-4">
+            <p className="mx-auto mt-2 md:mt-4 max-w-2xl text-sm md:text-base lg:text-lg leading-6 md:leading-8 text-white/90 px-4">
               Your secure document collection awaits. Access premium content with complete privacy and security.
             </p>
           </div>
         </div>
 
         {/* Animated background elements - hidden on mobile */}
-        <div className="hidden md:block absolute top-0 left-1/4 w-72 h-72 bg-red-500/20 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
-        <div className="hidden md:block absolute bottom-0 right-1/4 w-72 h-72 bg-red-400/20 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-2000"></div>
+        <div className="hidden md:block absolute top-0 left-1/4 w-72 h-72 bg-[#B12417]/20 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
+        <div className="hidden md:block absolute bottom-0 right-1/4 w-72 h-72 bg-[#9a1f13]/20 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-2000"></div>
       </div>
 
       {/* Info Banner */}
       <div className="relative mt-4 md:mt-2 lg:-mt-4 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mb-6 md:mb-8">
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl md:rounded-2xl p-4 md:p-6 shadow-xl border border-white/20 backdrop-blur-sm">
+        <div className="bg-gradient-to-r from-[#2B266F] to-[#211d57] text-white rounded-xl md:rounded-2xl p-4 md:p-6 shadow-xl border border-white/20 backdrop-blur-sm">
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <div className="w-8 h-8 md:w-10 md:h-10 bg-white/20 rounded-lg md:rounded-xl flex items-center justify-center">
@@ -265,7 +265,7 @@ const Documents = () => {
             </div>
             <div className="ml-3 md:ml-4">
               <p className="text-base md:text-lg font-semibold">Access Granted!</p>
-              <p className="text-sm md:text-base text-blue-100">You now have full access to all premium documents with complete security protection.</p>
+              <p className="text-sm md:text-base text-white/90">You now have full access to all premium documents with complete security protection.</p>
             </div>
           </div>
         </div>
@@ -355,7 +355,7 @@ const Documents = () => {
                     placeholder="Search documents..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="block w-full pl-10 pr-3 py-2.5 md:py-3 border border-gray-300 rounded-lg md:rounded-xl text-sm md:text-base leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-300"
+                    className="block w-full pl-10 pr-3 py-2.5 md:py-3 border border-gray-300 rounded-lg md:rounded-xl text-sm md:text-base leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-[#B12417] focus:border-transparent transition-all duration-300"
                   />
                 </div>
                 <div className="flex items-center justify-between sm:justify-end space-x-2">
@@ -368,7 +368,7 @@ const Documents = () => {
         {authLoading || loading || verifyingPayment ? (
           <div className="flex items-center justify-center py-16">
             <div className="relative">
-              <div className="w-16 h-16 rounded-full border-4 border-red-200 border-t-red-600 animate-spin"></div>
+              <div className="w-16 h-16 rounded-full border-4 border-[#B12417]/20 border-t-[#B12417] animate-spin"></div>
               <div className="mt-4 text-center">
                 <p className="text-gray-600 font-medium">
                   {authLoading ? 'Authenticating...' : verifyingPayment ? 'Verifying payment...' : 'Loading your documents...'}
@@ -381,9 +381,9 @@ const Documents = () => {
           </div>
         ) : error ? (
           <div className="text-center py-16">
-            <div className="bg-red-50/80 backdrop-blur-sm rounded-3xl border-2 border-red-200 shadow-xl p-12 max-w-2xl mx-auto">
-              <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <svg className="w-10 h-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="bg-[#B12417]/5 backdrop-blur-sm rounded-3xl border-2 border-[#B12417]/20 shadow-xl p-12 max-w-2xl mx-auto">
+              <div className="w-20 h-20 bg-[#B12417]/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg className="w-10 h-10 text-[#B12417]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
               </div>
@@ -395,7 +395,7 @@ const Documents = () => {
               <div className="space-y-3">
                 <button
                   onClick={fetchDocuments}
-                  className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-semibold py-3 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                  className="bg-gradient-to-r from-[#B12417] to-[#9a1f13] hover:from-[#9a1f13] hover:to-[#821a10] text-white font-semibold py-3 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
                 >
                   Try Again
                 </button>
@@ -438,13 +438,13 @@ const Documents = () => {
                   <div className="flex items-start justify-between mb-4">
                     {getFileTypeIcon(document.file_name)}
                     <div className="opacity-0 group-hover:opacity-100 transition-all duration-300">
-                      <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 text-[#2B266F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                       </svg>
                     </div>
                   </div>
                   
-                  <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 group-hover:text-blue-700 transition-colors duration-300 line-clamp-2">
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 group-hover:text-[#211d57] transition-colors duration-300 line-clamp-2">
                     {document.title}
                   </h3>
                   
@@ -457,14 +457,8 @@ const Documents = () => {
                   <div className="border-t border-gray-100 pt-3 sm:pt-4 mt-3 sm:mt-4">
                     {/* Mobile layout */}
                     <div className="sm:hidden space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-1 text-xs text-gray-500">
-                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
-                          </svg>
-                          <span>{formatFileSize(document.file_size)}</span>
-                        </div>
-                        <div className="px-2 py-1 bg-red-100 text-red-700 text-xs rounded-full font-medium">
+                      <div className="flex items-center justify-end">
+                        <div className="px-2 py-1 bg-[#B12417]/10 text-[#9a1f13] text-xs rounded-full font-medium">
                           Premium
                         </div>
                       </div>
@@ -483,12 +477,6 @@ const Documents = () => {
                       <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
                         <div className="flex items-center space-x-1">
                           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
-                          </svg>
-                          <span>{formatFileSize(document.file_size)}</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a1 1 0 011-1h6a1 1 0 011 1v4M3 21h18M5 21l1-14h12l1 14" />
                           </svg>
                           <span>{formatDate(document.created_at)}</span>
@@ -502,7 +490,7 @@ const Documents = () => {
                           </svg>
                           <span>Secure View</span>
                         </div>
-                        <div className="px-2 py-1 bg-red-100 text-red-700 text-xs rounded-full font-medium">
+                        <div className="px-2 py-1 bg-[#B12417]/10 text-[#9a1f13] text-xs rounded-full font-medium">
                           Premium
                         </div>
                       </div>

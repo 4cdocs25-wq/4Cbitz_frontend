@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { documentsAPI, paymentsAPI, usersAPI } from '../../api';
-import AdminSidebar from '../../components/admin/AdminSidebar';
 
 const AdminDashboard = () => {
   const [documents, setDocuments] = useState([]);
@@ -53,10 +52,7 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <AdminSidebar />
-
-      <div className="flex-1 p-8">
+    <div className="p-8 overflow-y-auto h-screen">
         <div className="max-w-7xl mx-auto">
           {/* Page Header */}
           <div className="mb-8">
@@ -109,13 +105,13 @@ const AdminDashboard = () => {
                 <div className="mb-8">
                   <h2 className="text-xl font-semibold text-gray-900 mb-4">Revenue & Payments</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+                    <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm overflow-hidden">
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-sm font-medium text-gray-600">Total Revenue</p>
                           <p className="text-2xl font-bold text-gray-900 mt-2">{formatCurrency(paymentStats.totalRevenue)}</p>
                         </div>
-                        <div className="p-3 bg-green-100 rounded-lg">
+                        <div className="p-2 bg-green-100 rounded-lg -mr-2">
                           <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
@@ -123,13 +119,13 @@ const AdminDashboard = () => {
                       </div>
                     </div>
 
-                    <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+                    <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm overflow-hidden">
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-sm font-medium text-gray-600">Success Rate</p>
                           <p className="text-2xl font-bold text-gray-900 mt-2">{paymentStats.successRate}%</p>
                         </div>
-                        <div className="p-3 bg-blue-100 rounded-lg">
+                        <div className="p-2 bg-blue-100 rounded-lg -mr-2">
                           <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
@@ -137,13 +133,13 @@ const AdminDashboard = () => {
                       </div>
                     </div>
 
-                    <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+                    <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm overflow-hidden">
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-sm font-medium text-gray-600">Completed</p>
                           <p className="text-2xl font-bold text-gray-900 mt-2">{paymentStats.completedPayments}</p>
                         </div>
-                        <div className="p-3 bg-green-100 rounded-lg">
+                        <div className="p-2 bg-green-100 rounded-lg -mr-2">
                           <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                           </svg>
@@ -151,13 +147,13 @@ const AdminDashboard = () => {
                       </div>
                     </div>
 
-                    <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+                    <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm overflow-hidden">
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-sm font-medium text-gray-600">Failed</p>
                           <p className="text-2xl font-bold text-gray-900 mt-2">{paymentStats.failedPayments}</p>
                         </div>
-                        <div className="p-3 bg-red-100 rounded-lg">
+                        <div className="p-2 bg-red-100 rounded-lg -mr-2">
                           <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                           </svg>
@@ -228,7 +224,6 @@ const AdminDashboard = () => {
           )}
         </div>
       </div>
-    </div>
   );
 };
 

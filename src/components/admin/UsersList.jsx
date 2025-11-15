@@ -7,7 +7,10 @@ const UsersList = ({ users, loading, hasMore, onLoadMore }) => {
     return new Intl.DateTimeFormat('en-US', {
       year: 'numeric',
       month: 'short',
-      day: 'numeric'
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
     }).format(date);
   };
 
@@ -83,7 +86,7 @@ const UsersList = ({ users, loading, hasMore, onLoadMore }) => {
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full">
+      <table className="w-full min-w-[1000px]">
         <thead className="bg-gray-50 border-b border-gray-200">
           <tr>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -94,6 +97,9 @@ const UsersList = ({ users, loading, hasMore, onLoadMore }) => {
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Subscription Status
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Contact Number
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Subscription Date
@@ -131,6 +137,9 @@ const UsersList = ({ users, loading, hasMore, onLoadMore }) => {
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 {getSubscriptionBadge(user.hasLifetimeSubscription)}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {user.contact_number || 'N/A'}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                 {formatDate(user.subscriptionDate)}

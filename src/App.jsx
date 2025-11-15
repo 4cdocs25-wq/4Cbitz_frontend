@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import Layout from './components/layout/Layout'
+import AdminLayout from './components/layout/AdminLayout'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 import Home from './pages/Home'
 import AdminLogin from './pages/auth/AdminLogin'
@@ -16,6 +17,10 @@ import Subscription from './pages/user/Subscription'
 import Documents from './pages/user/Documents'
 import DocumentViewer from './pages/user/DocumentViewer'
 import ProfileCompletion from './pages/user/ProfileCompletion'
+import Profile from './pages/user/Profile'
+import PaymentHistory from './pages/user/PaymentHistory'
+import ThankYou from './pages/user/ThankYou'
+import NotFound from './pages/NotFound'
 
 const App = () => {
   return (
@@ -28,63 +33,23 @@ const App = () => {
             {/* Admin Login (Public) */}
             <Route path="/admin/login" element={<AdminLogin />} />
 
-            {/* Admin Routes */}
+            {/* Admin Routes with AdminLayout */}
             <Route
-              path="/admin"
+              path="/admin/*"
               element={
                 <ProtectedRoute requiredRole="admin">
-                  <AdminDashboard />
+                  <AdminLayout />
                 </ProtectedRoute>
               }
-            />
-            <Route
-              path="/admin/documents"
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <DocumentManagerPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/transactions"
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <TransactionsPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/users"
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <UsersManagementPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/documents/view/:id"
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <AdminDocumentViewer />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/pricing"
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <PricingPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/settings"
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <AdminSettingsPage />
-                </ProtectedRoute>
-              }
-            />
+            >
+              <Route index element={<AdminDashboard />} />
+              <Route path="documents" element={<DocumentManagerPage />} />
+              <Route path="documents/view/:id" element={<AdminDocumentViewer />} />
+              <Route path="transactions" element={<TransactionsPage />} />
+              <Route path="users" element={<UsersManagementPage />} />
+              <Route path="pricing" element={<PricingPage />} />
+              <Route path="settings" element={<AdminSettingsPage />} />
+            </Route>
 
             {/* User Routes */}
             <Route
@@ -104,10 +69,34 @@ const App = () => {
               }
             />
             <Route
+              path="/profile"
+              element={
+                <ProtectedRoute requiredRole="user">
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/payment-history"
+              element={
+                <ProtectedRoute requiredRole="user">
+                  <PaymentHistory />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/subscription"
               element={
                 <ProtectedRoute requiredRole="user">
                   <Subscription />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/thank-you"
+              element={
+                <ProtectedRoute requiredRole="user">
+                  <ThankYou />
                 </ProtectedRoute>
               }
             />
@@ -127,6 +116,9 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
+
+            {/* 404 Not Found - Catch all undefined routes */}
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </Layout>
       </Router>

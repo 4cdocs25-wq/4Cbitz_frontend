@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { usersAPI } from '../../api';
-import AdminSidebar from '../../components/admin/AdminSidebar';
 import UsersList from '../../components/admin/UsersList';
 
 const UsersManagementPage = () => {
@@ -70,10 +69,7 @@ const UsersManagementPage = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <AdminSidebar />
-
-      <div className="flex-1 p-8">
+    <div className="py-8 px-4 md:px-8">
         <div className="max-w-7xl mx-auto">
           {/* Page Header */}
           <div className="mb-8">
@@ -155,24 +151,23 @@ const UsersManagementPage = () => {
               </svg>
             </div>
           </div>
+        </div>
 
-          {/* Users List */}
-          <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-900">All Users</h2>
-              <p className="text-sm text-gray-600 mt-1">View all registered users and their subscription status</p>
-            </div>
-
-            <UsersList
-              users={users}
-              loading={loading}
-              hasMore={pagination.hasMore}
-              onLoadMore={handleLoadMore}
-            />
+        {/* Users List - Outside max-w-7xl */}
+        <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h2 className="text-lg font-semibold text-gray-900">All Users</h2>
+            <p className="text-sm text-gray-600 mt-1">View all registered users and their subscription status</p>
           </div>
+
+          <UsersList
+            users={users}
+            loading={loading}
+            hasMore={pagination.hasMore}
+            onLoadMore={handleLoadMore}
+          />
         </div>
       </div>
-    </div>
   );
 };
 
