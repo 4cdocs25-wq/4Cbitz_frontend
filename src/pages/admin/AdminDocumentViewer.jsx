@@ -157,7 +157,14 @@ const AdminDocumentViewer = () => {
         <div className="mt-4 text-center text-sm text-gray-500">
           <p>Admin preview - Full access with no restrictions</p>
           <p className="text-xs mt-1">
-            Uploaded on {new Date(document.created_at).toLocaleDateString()}
+            Uploaded on {new Date(document.created_at).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric',
+              hour: 'numeric',
+              minute: '2-digit',
+              hour12: true
+            })}
           </p>
         </div>
       </div>

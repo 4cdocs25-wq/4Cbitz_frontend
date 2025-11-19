@@ -5,7 +5,11 @@ import UsersList from '../../components/admin/UsersList';
 const UsersManagementPage = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
+  const [filters, setFilters] = useState({
+    search: '',
+    startDate: '',
+    endDate: ''
+  });
   const [pagination, setPagination] = useState({
     limit: 20,
     offset: 0,
@@ -14,7 +18,7 @@ const UsersManagementPage = () => {
 
   useEffect(() => {
     fetchUsers(true); // true = reset users
-  }, [search]);
+  }, [filters]);
 
   const fetchUsers = async (reset = false) => {
     try {
@@ -24,7 +28,7 @@ const UsersManagementPage = () => {
       const response = await usersAPI.getAllUsers({
         limit: pagination.limit,
         offset,
-        search
+        ...filters
       });
 
       if (response.success) {
@@ -52,9 +56,13 @@ const UsersManagementPage = () => {
     }
   };
 
-  const handleSearchChange = (e) => {
-    setSearch(e.target.value);
+  const handleFilterChange = (field, value) => {
+    setFilters(prev => ({ ...prev, [field]: value }));
     setPagination({ ...pagination, offset: 0, hasMore: true });
+  };
+
+  const handleSearchChange = (e) => {
+    handleFilterChange('search', e.target.value);
   };
 
   const handleLoadMore = () => {
@@ -70,7 +78,7 @@ const UsersManagementPage = () => {
 
   return (
     <div className="py-8 px-4 md:px-8">
-        <div className="max-w-7xl mx-auto">
+        <div>
           {/* Page Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900">Users Management</h1>
@@ -125,30 +133,59 @@ const UsersManagementPage = () => {
             </div>
           </div>
 
-          {/* Search */}
+          {/* Filters */}
           <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Search Users</h2>
-            <div className="relative">
-              <input
-                type="text"
-                value={search}
-                onChange={handleSearchChange}
-                placeholder="Search by email or name..."
-                className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-              />
-              <svg
-                className="absolute left-3 top-3 w-5 h-5 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Search and Filter Users</h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Search Input */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Search</label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={filters.search}
+                    onChange={handleSearchChange}
+                    placeholder="Search by email or name..."
+                    className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                  />
+                  <svg
+                    className="absolute left-3 top-3 w-5 h-5 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                  </svg>
+                </div>
+              </div>
+
+              {/* Start Date Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+                <input
+                  type="date"
+                  value={filters.startDate}
+                  onChange={(e) => handleFilterChange('startDate', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
-              </svg>
+              </div>
+
+              {/* End Date Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+                <input
+                  type="date"
+                  value={filters.endDate}
+                  onChange={(e) => handleFilterChange('endDate', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                />
+              </div>
             </div>
           </div>
         </div>

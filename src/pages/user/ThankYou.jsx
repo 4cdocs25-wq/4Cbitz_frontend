@@ -5,7 +5,6 @@ import { paymentsAPI } from '../../api'
 const ThankYou = () => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const [countdown, setCountdown] = useState(5)
   const [verifying, setVerifying] = useState(true)
   const [error, setError] = useState(null)
   const [paymentDetails, setPaymentDetails] = useState(null)
@@ -45,20 +44,6 @@ const ThankYou = () => {
 
     verifyPayment()
   }, [searchParams])
-
-  useEffect(() => {
-    if (!verifying && !error && countdown > 0) {
-      const timer = setTimeout(() => {
-        setCountdown(countdown - 1)
-      }, 1000)
-
-      return () => clearTimeout(timer)
-    }
-
-    if (countdown === 0) {
-      navigate('/documents')
-    }
-  }, [countdown, verifying, error, navigate])
 
   const handleContinue = () => {
     navigate('/documents')
@@ -159,7 +144,7 @@ const ThankYou = () => {
                 Welcome to your document library!
               </p>
               <p className="text-gray-500">
-                Redirecting to documents in <span className="font-bold text-[#B12417]">{countdown}</span> seconds...
+                You can now access all your premium documents
               </p>
             </div>
 

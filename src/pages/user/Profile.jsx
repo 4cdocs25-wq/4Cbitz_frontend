@@ -400,7 +400,7 @@ const Profile = () => {
                   className="px-6 py-3 text-gray-700 bg-gray-100 rounded-lg font-medium hover:bg-gray-200 transition-colors"
                   disabled={saving}
                 >
-                  Reset
+                  Cancel
                 </button>
                 <button
                   type="submit"

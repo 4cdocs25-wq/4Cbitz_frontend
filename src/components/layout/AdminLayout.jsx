@@ -19,7 +19,7 @@ const AdminLayoutContent = () => {
       )}
 
       {/* Main Content */}
-      <div className={`flex-1 flex flex-col min-h-screen ${isSidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'} transition-all duration-300`}>
+      <div className={`flex-1 flex flex-col min-h-screen overflow-hidden ${isSidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'} transition-all duration-300`}>
         {/* Header */}
         <header className="bg-white border-b border-gray-200 sticky top-0 z-20 lg:hidden">
           <div className="flex items-center justify-between px-4 py-3">
@@ -41,7 +41,7 @@ const AdminLayoutContent = () => {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-x-hidden overflow-y-auto">
+        <main className="flex-1 overflow-x-auto overflow-y-auto">
           <Outlet />
         </main>
       </div>

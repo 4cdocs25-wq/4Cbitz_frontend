@@ -21,11 +21,13 @@ export const usersAPI = {
 
   // Admin: Get all users with subscription information
   getAllUsers: async (params = {}) => {
-    const { limit = 20, offset = 0, search } = params;
+    const { limit = 20, offset = 0, search, startDate, endDate } = params;
     const queryParams = new URLSearchParams({
       limit: limit.toString(),
       offset: offset.toString(),
       ...(search && { search }),
+      ...(startDate && { startDate }),
+      ...(endDate && { endDate }),
     });
 
     const response = await apiClient.get(`/users/admin/all?${queryParams}`);

@@ -120,7 +120,7 @@ const Subscription = () => {
         <div className="bg-white/90 backdrop-blur-sm rounded-3xl border-2 border-white/20 shadow-2xl overflow-hidden">
           {/* Ribbon */}
           <div className="bg-gradient-to-r from-[#B12417] to-[#9a1f13] text-white py-3 px-6 text-center">
-            <p className="text-sm font-semibold">🎉 One-Time Payment • Lifetime Access • No Recurring Fees</p>
+            <p className="text-sm font-semibold">One-Time Payment • Lifetime Access • No Recurring Fees</p>
           </div>
 
           <div className="p-8 sm:p-12">
@@ -146,8 +146,8 @@ const Subscription = () => {
                   </div>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">All Premium Documents</h3>
-                  <p className="text-gray-600 text-sm">Access entire library instantly</p>
+                  <h3 className="font-semibold text-gray-900">Comprehensive guide</h3>
+                  <p className="text-gray-600 text-sm">Step by Step Process, Documentation & Compliance for Launching Businesses in UAE</p>
                 </div>
               </div>
 
@@ -160,8 +160,8 @@ const Subscription = () => {
                   </div>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">Secure Viewing</h3>
-                  <p className="text-gray-600 text-sm">Protected against copying</p>
+                  <h3 className="font-semibold text-gray-900">Consultative approach</h3>
+                  <p className="text-gray-600 text-sm">Information for Awareness and Risk Mitigation</p>
                 </div>
               </div>
 
@@ -174,8 +174,8 @@ const Subscription = () => {
                   </div>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">Regular Updates</h3>
-                  <p className="text-gray-600 text-sm">New content added monthly</p>
+                  <h3 className="font-semibold text-gray-900">Handy Reckner</h3>
+                  <p className="text-gray-600 text-sm">Go to Tool for informed decision making</p>
                 </div>
               </div>
 
@@ -188,8 +188,8 @@ const Subscription = () => {
                   </div>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">Priority Support</h3>
-                  <p className="text-gray-600 text-sm">Get help when you need it</p>
+                  <h3 className="font-semibold text-gray-900">Loaded with Simplicity</h3>
+                  <p className="text-gray-600 text-sm">Easy to understand format</p>
                 </div>
               </div>
 
@@ -202,8 +202,8 @@ const Subscription = () => {
                   </div>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">Money-Back Guarantee</h3>
-                  <p className="text-gray-600 text-sm">30-day refund policy</p>
+                  <h3 className="font-semibold text-gray-900">Regular updates</h3>
+                  <p className="text-gray-600 text-sm">Access relevant and updated information</p>
                 </div>
               </div>
 
@@ -216,8 +216,22 @@ const Subscription = () => {
                   </div>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">No Hidden Fees</h3>
-                  <p className="text-gray-600 text-sm">Pay once, access forever</p>
+                  <h3 className="font-semibold text-gray-900">Onetime payment Lifetime access</h3>
+                  <p className="text-gray-600 text-sm">No hidden charges</p>
+                </div>
+              </div>
+
+              <div className="flex items-start space-x-3">
+                <div className="flex-shrink-0">
+                  <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
+                    <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                    </svg>
+                  </div>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900">Secure Document Access</h3>
+                  <p className="text-gray-600 text-sm">Password based access, non-editable files</p>
                 </div>
               </div>
             </div>

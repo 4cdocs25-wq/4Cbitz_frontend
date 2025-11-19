@@ -20,6 +20,7 @@ import ProfileCompletion from './pages/user/ProfileCompletion'
 import Profile from './pages/user/Profile'
 import PaymentHistory from './pages/user/PaymentHistory'
 import ThankYou from './pages/user/ThankYou'
+import PublicDocument from './pages/PublicDocument'
 import NotFound from './pages/NotFound'
 
 const App = () => {
@@ -116,6 +117,9 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
+
+            {/* Public Document Access (No Authentication Required) */}
+            <Route path="/public/:token" element={<PublicDocument />} />
 
             {/* 404 Not Found - Catch all undefined routes */}
             <Route path="*" element={<NotFound />} />

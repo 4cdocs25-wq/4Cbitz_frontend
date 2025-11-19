@@ -4,6 +4,7 @@ import { GoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../contexts/AuthContext';
 import { settingsAPI } from '../api';
 import PolicyModal from '../components/PolicyModal';
+import Footer from '../components/layout/Footer';
 
 const Home = () => {
   const { handleGoogleLogin, user } = useAuth();
@@ -58,8 +59,18 @@ const Home = () => {
 
   const handlePolicyClick = async (policyType) => {
     try {
-      const key = policyType === 'terms' ? 'terms_of_service' : 'privacy_policy';
-      const title = policyType === 'terms' ? 'Terms of Service' : 'Privacy Policy';
+      let key, title;
+
+      if (policyType === 'terms') {
+        key = 'terms_of_service';
+        title = 'Terms of Service';
+      } else if (policyType === 'privacy') {
+        key = 'privacy_policy';
+        title = 'Privacy Policy';
+      } else if (policyType === 'refund') {
+        key = 'refund_policy';
+        title = 'Refund Policy';
+      }
 
       const response = await settingsAPI.getPublicByKey(key);
 
@@ -103,7 +114,7 @@ const Home = () => {
         <div
           className="absolute inset-0 opacity-20"
           style={{
-            backgroundImage: 'url(https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070)',
+            backgroundImage: 'url(/background.jpeg)',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat'
@@ -133,7 +144,7 @@ const Home = () => {
                     Start Your Journey Here!
                   </h2>
                   <p className="text-white/90 text-sm lg:text-base">
-                    Sign in to access our comprehensive business setup guide
+                    Sign in to access our comprehensive guide
                   </p>
                 </div>
 
@@ -159,7 +170,7 @@ const Home = () => {
                       >
                         Terms of Service
                       </button>
-                      {' '}and{' '}
+                      {', '}
                       <button
                         type="button"
                         onClick={(e) => {
@@ -169,6 +180,17 @@ const Home = () => {
                         className="font-bold underline hover:text-white/80 transition-colors"
                       >
                         Privacy Policy
+                      </button>
+                      {' '}and{' '}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handlePolicyClick('refund');
+                        }}
+                        className="font-bold underline hover:text-white/80 transition-colors"
+                      >
+                        Refund Policy
                       </button>
                     </label>
                   </div>
@@ -199,7 +221,7 @@ const Home = () => {
             <div className="order-2 lg:order-1">
               <div className="rounded-2xl overflow-hidden shadow-2xl">
                 <img
-                  src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=2070"
+                  src="/card.jpeg"
                   alt="Professional business team"
                   className="w-full h-[400px] sm:h-[500px] object-cover"
                 />
@@ -301,6 +323,9 @@ const Home = () => {
         title={policyModal.title}
         content={policyModal.content}
       />
+
+      {/* Footer */}
+      <Footer onPolicyClick={handlePolicyClick} />
     </>
   );
 };

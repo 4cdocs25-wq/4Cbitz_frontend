@@ -12,6 +12,7 @@ const Navbar = () => {
   const [hasSubscription, setHasSubscription] = useState(false)
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
   const dropdownRef = useRef(null)
+  const isAdminPage = location.pathname.startsWith('/admin')
 
   // Check if user has subscription
   useEffect(() => {
@@ -80,7 +81,7 @@ const Navbar = () => {
 
   return (
     <nav className="bg-white shadow-md backdrop-blur-sm sticky top-0 z-50 border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+      <div className={`${isAdminPage ? '' : 'max-w-7xl mx-auto'} px-3 sm:px-6 lg:px-8`}>
         <div className="flex justify-between items-center h-16 sm:h-20">
           <div className="flex items-center">
             <Link

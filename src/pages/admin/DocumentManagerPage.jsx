@@ -390,7 +390,14 @@ const DocumentManagerPage = () => {
                           <p className="text-sm text-gray-600 mb-2">{doc.description}</p>
                         )}
                         <p className="text-xs text-gray-500">
-                          Uploaded {new Date(doc.created_at).toLocaleDateString()}
+                          Uploaded {new Date(doc.created_at).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                            hour: 'numeric',
+                            minute: '2-digit',
+                            hour12: true
+                          })}
                         </p>
                       </div>
                       <div className="flex items-center gap-2 ml-4">
