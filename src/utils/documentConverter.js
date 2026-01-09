@@ -17,8 +17,9 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
  */
 export const convertPdfPageToImage = async (pdfUrl, pageNumber, scale = 1.8, signal = null, isPreview = false) => {
   try {
-    // Dynamic timeout based on quality level
-    const timeoutDuration = isPreview ? 5000 : 18000 // 5s for preview, 18s for final quality
+    // Dynamic timeout based on quality level and scale
+    // Higher scales need more time: 15s preview, 30s for 4.0x, 45s for 6.0x+
+    const timeoutDuration = isPreview ? 15000 : (scale >= 6.0 ? 45000 : 30000)
     
     // Create timeout promise
     const timeoutPromise = new Promise((_, reject) => {
@@ -52,28 +53,28 @@ export const convertPdfPageToImage = async (pdfUrl, pageNumber, scale = 1.8, sig
       throw new Error('PDF conversion aborted')
     }
     
-    // Create high-quality canvas
+    // Create high-quality canvas with optimized context for readback operations
     const canvas = document.createElement('canvas')
-    const context = canvas.getContext('2d')
+    const context = canvas.getContext('2d', { willReadFrequently: true })
     
     // Set canvas dimensions
     canvas.height = viewport.height
     canvas.width = viewport.width
     
     // Dynamic quality based on preview vs final
-    context.imageSmoothingEnabled = true
-    context.imageSmoothingQuality = isPreview ? 'medium' : 'high'
-    
-    // Optimize for text rendering in final quality
-    if (!isPreview) {
-      context.textRenderingOptimization = 'optimizeQuality'
+    if (isPreview) {
+      context.imageSmoothingEnabled = true
+      context.imageSmoothingQuality = 'medium'
+    } else {
+      // Disable smoothing for sharper text at high resolutions
+      context.imageSmoothingEnabled = false
     }
-    
-    // Render page to canvas
+
+    // Render page to canvas with print quality for sharper text
     const renderContext = {
       canvasContext: context,
       viewport: viewport,
-      intent: 'display'
+      intent: isPreview ? 'display' : 'print'  // 'print' gives sharper text
     }
     
     const renderPromise = page.render(renderContext).promise

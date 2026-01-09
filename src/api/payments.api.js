@@ -44,6 +44,16 @@ export const paymentsAPI = {
     const response = await apiClient.get('/payments/admin/stats');
     return response.data;
   },
+
+  // Admin: Export transactions for date range
+  exportTransactions: async (startDate, endDate) => {
+    const queryParams = new URLSearchParams({
+      startDate,
+      endDate,
+    });
+    const response = await apiClient.get(`/payments/admin/export?${queryParams}`);
+    return response.data;
+  },
 };
 
 export default paymentsAPI;

@@ -51,17 +51,14 @@ const Footer = ({ onPolicyClick }) => {
           {/* Company Info */}
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <h3 className="text-xl font-bold text-gray-900">
-                4C BZ MANAGEMENT SERVICES
-              </h3>
               <img
-                src="/PNG/Vertical_Logo.png"
+                src="/PNG/Horizontal_Logo.png"
                 alt="4C BZ Management Services Logo"
                 className="h-7"
               />
             </div>
             <p className="text-gray-600 text-sm">
-              A Vertical of 4C Integrated Communicators
+              A vertical of 4C Integrated Communicators
             </p>
           </div>
 

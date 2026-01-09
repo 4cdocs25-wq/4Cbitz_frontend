@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { usersAPI } from '../../api';
 import UsersList from '../../components/admin/UsersList';
+import ExportUsersModal from '../../components/admin/ExportUsersModal';
 
 const UsersManagementPage = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showExportModal, setShowExportModal] = useState(false);
   const [filters, setFilters] = useState({
     search: '',
     startDate: '',
@@ -80,9 +82,20 @@ const UsersManagementPage = () => {
     <div className="py-8 px-4 md:px-8">
         <div>
           {/* Page Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Users Management</h1>
-            <p className="mt-2 text-gray-600">View and manage all registered users</p>
+          <div className="mb-8 flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Users Management</h1>
+              <p className="mt-2 text-gray-600">View and manage all registered users</p>
+            </div>
+            <button
+              onClick={() => setShowExportModal(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium shadow-sm"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Download Excel
+            </button>
           </div>
 
           {/* Stats Cards */}
@@ -121,7 +134,7 @@ const UsersManagementPage = () => {
             <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Free Users</p>
+                  <p className="text-sm font-medium text-gray-600">Not Subscribed</p>
                   <p className="text-2xl font-bold text-gray-900 mt-2">{stats.freeUsers}</p>
                 </div>
                 <div className="p-3 bg-gray-100 rounded-lg">
@@ -204,6 +217,12 @@ const UsersManagementPage = () => {
             onLoadMore={handleLoadMore}
           />
         </div>
+
+        {/* Export Modal */}
+        <ExportUsersModal
+          isOpen={showExportModal}
+          onClose={() => setShowExportModal(false)}
+        />
       </div>
   );
 };

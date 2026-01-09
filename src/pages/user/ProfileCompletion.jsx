@@ -216,6 +216,28 @@ const ProfileCompletion = () => {
       })
 
       if (response.success) {
+        // Send lead data to client's affiliate tracking API
+        const trackingData = JSON.parse(localStorage.getItem('lead_tracking_data') || '{}');
+
+        fetch('https://rgkzbfbrybzpoalseqai.supabase.co/functions/v1/capture-lead', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: user.email,
+            name: formData.name.trim(),
+            phone: fullContactNumber,
+            utm_source: trackingData.utm_source || null,
+            utm_medium: trackingData.utm_medium || null,
+            utm_campaign: trackingData.utm_campaign || null,
+            utm_content: trackingData.utm_content || null,
+            affiliate_code: trackingData.affiliate_code || null,
+            referrer: trackingData.referrer || null
+          })
+        }).catch(err => console.error('Lead capture error:', err));
+
+        // Clear tracking data after sending
+        localStorage.removeItem('lead_tracking_data');
+
         // Refresh user data to get updated profile_completed flag
         await checkAuth()
 

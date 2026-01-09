@@ -109,7 +109,7 @@ const Subscription = () => {
             Unlock Premium Access
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg leading-8 text-white/90">
-            Get lifetime access to all business setup documents and resources
+            Get lifetime access to all purchased documents and resources
           </p>
         </div>
       </div>
@@ -161,7 +161,7 @@ const Subscription = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900">Consultative approach</h3>
-                  <p className="text-gray-600 text-sm">Information for Awareness and Risk Mitigation</p>
+                  <p className="text-gray-600 text-sm">Information for Awareness and<br />Risk Mitigation</p>
                 </div>
               </div>
 
@@ -174,7 +174,7 @@ const Subscription = () => {
                   </div>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">Handy Reckner</h3>
+                  <h3 className="font-semibold text-gray-900">Handy Reckoner</h3>
                   <p className="text-gray-600 text-sm">Go to Tool for informed decision making</p>
                 </div>
               </div>
@@ -204,20 +204,6 @@ const Subscription = () => {
                 <div>
                   <h3 className="font-semibold text-gray-900">Regular updates</h3>
                   <p className="text-gray-600 text-sm">Access relevant and updated information</p>
-                </div>
-              </div>
-
-              <div className="flex items-start space-x-3">
-                <div className="flex-shrink-0">
-                  <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
-                    <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
-                    </svg>
-                  </div>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">Onetime payment Lifetime access</h3>
-                  <p className="text-gray-600 text-sm">No hidden charges</p>
                 </div>
               </div>
 

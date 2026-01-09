@@ -33,6 +33,16 @@ export const usersAPI = {
     const response = await apiClient.get(`/users/admin/all?${queryParams}`);
     return response.data;
   },
+
+  // Admin: Export users for date range
+  exportUsers: async (startDate, endDate) => {
+    const queryParams = new URLSearchParams({
+      startDate,
+      endDate,
+    });
+    const response = await apiClient.get(`/users/admin/export?${queryParams}`);
+    return response.data;
+  },
 };
 
 export default usersAPI;

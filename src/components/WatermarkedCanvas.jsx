@@ -28,10 +28,9 @@ const WatermarkedCanvas = ({
         canvas.width = img.width
         canvas.height = img.height
 
-        // Enable high-quality canvas rendering
-        ctx.imageSmoothingEnabled = true
+        // Disable smoothing for sharper text at high resolutions
+        ctx.imageSmoothingEnabled = false
         ctx.imageSmoothingQuality = 'high'
-        ctx.textRenderingOptimization = 'optimizeQuality'
 
         // Clear canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height)
@@ -69,90 +68,8 @@ const WatermarkedCanvas = ({
     img.src = imageData
   }, [imageData, watermarkText, pageNumber, totalPages, userEmail, userId])
 
-  const addWatermarkOverlay = (ctx, width, height, text, userEmail, userId) => {
-    // Save current context
-    ctx.save()
-
-    // Main watermark (corner)
-    ctx.globalAlpha = 0.7
-    ctx.fillStyle = '#ffffff'
-    ctx.strokeStyle = '#000000'
-    ctx.lineWidth = 2
-    ctx.font = 'bold 24px Arial'
-    ctx.textAlign = 'right'
-    ctx.textBaseline = 'bottom'
-
-    const padding = 20
-    const x = width - padding
-    const y = height - padding
-
-    // Draw main watermark with stroke
-    ctx.strokeText(text, x, y)
-    ctx.fillText(text, x, y)
-
-    // User-specific watermarks (multiple positions)
-    if (userEmail) {
-      // Semi-transparent user email watermarks
-      ctx.globalAlpha = 0.15
-      ctx.fillStyle = '#ff0000'
-      ctx.font = 'bold 16px Arial'
-      
-      // Top-left user watermark
-      ctx.textAlign = 'left'
-      ctx.textBaseline = 'top'
-      const userText = `${userEmail} • ${new Date().toLocaleDateString()}`
-      ctx.fillText(userText, 20, 20)
-      
-      // Center diagonal watermarks
-      ctx.globalAlpha = 0.08
-      ctx.font = 'bold 14px Arial'
-      ctx.textAlign = 'center'
-      ctx.textBaseline = 'middle'
-      
-      const centerX = width / 2
-      const centerY = height / 2
-      
-      // Rotate and add multiple diagonal watermarks
-      ctx.save()
-      ctx.translate(centerX, centerY)
-      ctx.rotate(-Math.PI / 6) // -30 degrees
-      ctx.fillText(`${text} • ${userEmail}`, 0, 0)
-      ctx.restore()
-      
-      ctx.save()
-      ctx.translate(centerX, centerY - 100)
-      ctx.rotate(Math.PI / 6) // 30 degrees  
-      ctx.fillText(`${text} • ${userEmail}`, 0, 0)
-      ctx.restore()
-      
-      ctx.save()
-      ctx.translate(centerX, centerY + 100)
-      ctx.rotate(-Math.PI / 4) // -45 degrees
-      ctx.fillText(`${text} • ${userEmail}`, 0, 0)
-      ctx.restore()
-    }
-
-    // Invisible tracking watermark (for forensics)
-    if (userId) {
-      ctx.globalAlpha = 0.01 // Nearly invisible
-      ctx.fillStyle = '#000001'
-      ctx.font = '8px Arial'
-      ctx.textAlign = 'left'
-      ctx.textBaseline = 'bottom'
-      ctx.fillText(`ID:${userId}:${Date.now()}`, 5, height - 5)
-    }
-
-    // Timestamp watermark
-    ctx.globalAlpha = 0.3
-    ctx.fillStyle = '#666666'
-    ctx.font = 'bold 12px Arial'
-    ctx.textAlign = 'right'
-    ctx.textBaseline = 'top'
-    const timestamp = new Date().toLocaleString()
-    ctx.fillText(`Viewed: ${timestamp}`, width - 10, 10)
-
-    // Restore context
-    ctx.restore()
+  const addWatermarkOverlay = () => {
+    // Watermarks removed
   }
 
   const addPageNumber = (ctx, width, pageNumber, totalPages) => {
@@ -297,9 +214,9 @@ const WatermarkedCanvas = ({
         WebkitTouchCallout: 'none',
         WebkitTapHighlightColor: 'transparent',
         pointerEvents: 'auto',
-        imageRendering: 'pixelated',
-        WebkitImageRendering: 'crisp-edges',
-        MozImageRendering: 'crisp-edges',
+        imageRendering: 'auto',
+        WebkitImageRendering: '-webkit-optimize-contrast',
+        MozImageRendering: 'auto',
         WebkitUserDrag: 'none',
         WebkitAppRegion: 'no-drag',
         ...style

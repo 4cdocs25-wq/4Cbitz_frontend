@@ -190,8 +190,18 @@ const DocumentViewer = () => {
     setLoadingPage(true)
 
     try {
-      // Step 1: Load fast preview (1-2 seconds)
-      const previewData = await convertPdfPageToImage(fileUrl, pageNumber, 1.0, signal, true)
+      // Step 1: Load fast preview with retry (up to 2 attempts)
+      let previewData = null
+      for (let attempt = 1; attempt <= 2 && !previewData; attempt++) {
+        if (!mountedRef.current) return null
+        try {
+          previewData = await convertPdfPageToImage(fileUrl, pageNumber, 1.0, signal, true)
+          if (!previewData?.success) previewData = null
+        } catch (error) {
+          console.error(`Preview attempt ${attempt}/2 failed for page ${pageNumber}:`, error.message)
+          if (attempt < 2) await new Promise(r => setTimeout(r, 1500)) // Wait 1.5s before retry
+        }
+      }
 
       if (!mountedRef.current) return null
 
@@ -201,87 +211,94 @@ const DocumentViewer = () => {
         setPageCache(new Map(pageCache)) // Create new Map to trigger React re-render
         setLoadingPage(false)
 
-        // Step 2: Load medium quality (2.0x) in background
+        // Step 2: Load final quality (4.0x) in background with retry
         setTimeout(async () => {
           if (!mountedRef.current || failedPages.has(pageNumber)) return
 
-          try {
-            const mediumData = await convertPdfPageToImage(fileUrl, pageNumber, 2.0, signal, false)
-
+          // Retry up to 2 times for 4.0x quality
+          let finalData = null
+          for (let attempt = 1; attempt <= 2 && !finalData; attempt++) {
             if (!mountedRef.current) return
-
-            if (mediumData && mediumData.success) {
-              const mediumKey = `${pageNumber}_2x`
-              pageCache.set(mediumKey, mediumData) // Add medium quality
-              setPageCache(new Map(pageCache)) // Trigger re-render with medium quality
-
-              // Step 3: Load final quality (4.0x) after medium quality
-              setTimeout(async () => {
-                if (!mountedRef.current || failedPages.has(pageNumber)) return
-
-                try {
-                  const finalData = await convertPdfPageToImage(fileUrl, pageNumber, 4.0, signal, false)
-
-                  if (!mountedRef.current) return
-
-                  if (finalData && finalData.success) {
-                    pageCache.set(cacheKey, finalData) // Add final quality
-                    setPageCache(new Map(pageCache)) // Trigger re-render with final quality
-
-                    // Delete preview and medium quality after a delay for smooth transition
-                    setTimeout(() => {
-                      if (!mountedRef.current) return
-                      pageCache.delete(previewKey) // Remove preview
-                      pageCache.delete(mediumKey) // Remove medium quality
-
-                      // Keep cache size reasonable (max 8 pages total)
-                      if (pageCache.size > 8) {
-                        const entries = Array.from(pageCache.entries())
-                        entries.slice(0, pageCache.size - 8).forEach(([key]) => {
-                          pageCache.delete(key)
-                        })
-                      }
-
-                      setPageCache(new Map(pageCache)) // Update cache after cleanup
-                    }, 600) // 600ms allows smooth transition
-
-                    // Show enhancement indicator briefly
-                    if (pageNumber === currentPage) {
-                      setIsEnhancing(true)
-                      setTimeout(() => setIsEnhancing(false), 2000)
-                    }
-                  }
-                } catch {
-                  // Final quality failed, keeping medium quality
-                }
-              }, 2000) // Wait 2 seconds after medium quality before loading final
-            }
-          } catch {
-            // Medium quality failed, keeping preview
-          }
-        }, 500) // Load medium quality after 500ms
-
-        // Smart preloading - next 2-3 pages preview for documents under 200 pages
-        if (totalPages < 200 && pageNumber < totalPages) {
-          // Preload next 2-3 pages at preview quality only
-          for (let i = 1; i <= 3; i++) {
-            const nextPage = pageNumber + i
-            if (nextPage <= totalPages) {
-              setTimeout(() => {
-                if (!mountedRef.current) return
-                const previewKey = `${nextPage}_preview`
-                const finalKey = `${nextPage}_final`
-                const mediumKey = `${nextPage}_2x`
-                // Only preload if not already cached
-                if (!pageCache.has(previewKey) && !pageCache.has(finalKey) && !pageCache.has(mediumKey) && !failedPages.has(nextPage)) {
-                  loadPreviewOnly(nextPage, fileUrl, signal).catch(() => {
-                    // Silently handle preload failure
-                  })
-                }
-              }, i * 500) // Stagger loads: 500ms, 1000ms, 1500ms
+            try {
+              finalData = await convertPdfPageToImage(fileUrl, pageNumber, 4.0, null, false)
+              if (!finalData?.success) finalData = null
+            } catch (error) {
+              console.error(`4.0x attempt ${attempt}/2 failed for page ${pageNumber}:`, error.message)
+              if (attempt < 2) await new Promise(r => setTimeout(r, 1000))
             }
           }
-        }
+
+          if (!mountedRef.current || !finalData) return
+
+          pageCache.set(cacheKey, finalData) // Add final quality
+          setPageCache(new Map(pageCache)) // Trigger re-render with final quality
+
+          // Step 3: Load ultra high quality (6.0x) after final quality with retry
+          setTimeout(async () => {
+            if (!mountedRef.current || failedPages.has(pageNumber)) return
+
+            // Retry up to 2 times for 6.0x quality
+            let ultraData = null
+            for (let attempt = 1; attempt <= 2 && !ultraData; attempt++) {
+              if (!mountedRef.current) return
+              try {
+                ultraData = await convertPdfPageToImage(fileUrl, pageNumber, 6.0, null, false)
+                if (!ultraData?.success) ultraData = null
+              } catch (error) {
+                console.error(`6.0x attempt ${attempt}/2 failed for page ${pageNumber}:`, error.message)
+                if (attempt < 2) await new Promise(r => setTimeout(r, 1000))
+              }
+            }
+
+            if (!mountedRef.current || !ultraData) return
+
+            const ultraKey = `${pageNumber}_ultra`
+            pageCache.set(ultraKey, ultraData) // Add ultra high quality
+            setPageCache(new Map(pageCache)) // Trigger re-render with ultra high quality
+
+            // Delete preview and final quality after a delay for smooth transition
+            setTimeout(() => {
+              if (!mountedRef.current) return
+              pageCache.delete(previewKey) // Remove preview
+              pageCache.delete(cacheKey) // Remove final quality
+
+              // Keep cache size reasonable (max 8 pages total)
+              if (pageCache.size > 8) {
+                const entries = Array.from(pageCache.entries())
+                entries.slice(0, pageCache.size - 8).forEach(([key]) => {
+                  pageCache.delete(key)
+                })
+              }
+
+              setPageCache(new Map(pageCache)) // Update cache after cleanup
+            }, 600) // 600ms allows smooth transition
+
+            // Show enhancement indicator briefly
+            if (pageNumber === currentPage) {
+              setIsEnhancing(true)
+              setTimeout(() => setIsEnhancing(false), 2000)
+            }
+          }, 2000) // Wait 2 seconds after final quality before loading ultra
+        }, 500) // Load final quality after 500ms
+
+        // Smart preloading DISABLED - was competing with quality upgrades for PDF.js worker
+        // TODO: Re-enable after quality upgrades complete by tracking upgrade status
+        // if (totalPages < 200 && pageNumber < totalPages) {
+        //   for (let i = 1; i <= 3; i++) {
+        //     const nextPage = pageNumber + i
+        //     if (nextPage <= totalPages) {
+        //       setTimeout(() => {
+        //         if (!mountedRef.current) return
+        //         const previewKey = `${nextPage}_preview`
+        //         const finalKey = `${nextPage}_final`
+        //         const ultraKey = `${nextPage}_ultra`
+        //         if (!pageCache.has(previewKey) && !pageCache.has(finalKey) && !pageCache.has(ultraKey) && !failedPages.has(nextPage)) {
+        //           loadPreviewOnly(nextPage, fileUrl, null).catch(() => {})
+        //         }
+        //       }, i * 500)
+        //     }
+        //   }
+        // }
         
         return previewData
       } else {
@@ -327,20 +344,23 @@ const DocumentViewer = () => {
 
     const targetPage = Math.max(1, Math.min(pageNum, totalPages || 1))
 
+    const ultraKey = `${targetPage}_ultra`
     const finalKey = `${targetPage}_final`
-    const mediumKey = `${targetPage}_2x`
     const previewKey = `${targetPage}_preview`
 
-    // Check if page exists in cache (preview, medium, or final)
-    const pageExists = pageCache.has(finalKey) || pageCache.has(mediumKey) || pageCache.has(previewKey)
+    // Check if page exists in cache (preview, final, or ultra)
+    const pageExists = pageCache.has(ultraKey) || pageCache.has(finalKey) || pageCache.has(previewKey)
 
     if (document?.file_url && !pageExists) {
-      // Load the page FIRST, then update currentPage
+      // Set loading state and current page BEFORE loading to prevent "Conversion Failed" flash
+      setLoadingPage(true)
+      setCurrentPage(targetPage)
+      // Now load the page
       await loadPage(targetPage, document.file_url, abortController?.signal)
+    } else {
+      // Page already cached, just update current page
+      setCurrentPage(targetPage)
     }
-
-    // Update current page AFTER loading (this triggers re-render)
-    setCurrentPage(targetPage)
   }
 
   const handlePageInputKeyPress = (e) => {
@@ -450,11 +470,18 @@ const DocumentViewer = () => {
     )
   }
 
-  // Get the best available version of the current page (4.0x > 2.0x > 1.0x)
+  // Get the best available version of the current page (10.0x > 4.0x > preview)
+  const ultraKey = `${currentPage}_ultra`
   const finalKey = `${currentPage}_final`
-  const mediumKey = `${currentPage}_2x`
   const previewKey = `${currentPage}_preview`
-  const currentPageData = pageCache.get(finalKey) || pageCache.get(mediumKey) || pageCache.get(previewKey)
+
+  // Determine which quality level is currently displayed
+  const isUltraQuality = pageCache.has(ultraKey)
+  const isFinalQuality = !isUltraQuality && pageCache.has(finalKey)
+  const isPreviewQuality = !isUltraQuality && !isFinalQuality && pageCache.has(previewKey)
+  const currentQualityLabel = isUltraQuality ? '6.0x' : isFinalQuality ? '4.0x' : 'Preview'
+
+  const currentPageData = pageCache.get(ultraKey) || pageCache.get(finalKey) || pageCache.get(previewKey)
 
   return (
     <SecurityProvider>
@@ -588,7 +615,7 @@ const DocumentViewer = () => {
                 <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
-                <span className="font-medium text-red-700">Read-only mode • Print, copy, and download disabled</span>
+                <span className="font-medium text-red-700">Read Only Mode</span>
               </div>
             </div>
           </div>
@@ -613,20 +640,20 @@ const DocumentViewer = () => {
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
-                    {currentPageData?.isPreview && !isEnhancing ? (
+                    {isPreviewQuality ? (
                       <>
                         <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
-                        <span className="text-yellow-200 text-xs font-medium">Loading High Quality...</span>
+                        <span className="text-yellow-200 text-xs font-medium">Loading... (Preview)</span>
                       </>
-                    ) : isEnhancing ? (
+                    ) : isFinalQuality ? (
                       <>
                         <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
-                        <span className="text-blue-200 text-xs font-medium">Enhanced to Crystal Clear!</span>
+                        <span className="text-blue-200 text-xs font-medium">Quality: {currentQualityLabel}</span>
                       </>
                     ) : (
                       <>
                         <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                        <span className="text-green-200 text-xs font-medium">Crystal Clear Quality</span>
+                        <span className="text-green-200 text-xs font-medium">Quality: {currentQualityLabel}</span>
                       </>
                     )}
                   </div>
@@ -652,7 +679,8 @@ const DocumentViewer = () => {
                 </div>
               </div>
             </div>
-          ) : (
+          ) : failedPages.has(currentPage) ? (
+            /* Show "Conversion Failed" ONLY when page explicitly failed all attempts */
             <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 p-12 text-center">
               <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <svg className="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -660,9 +688,40 @@ const DocumentViewer = () => {
                 </svg>
               </div>
               <h3 className="text-2xl font-semibold text-gray-900 mb-4">Conversion Failed</h3>
-              <p className="text-gray-600 mb-8 max-w-md mx-auto">
+              <p className="text-gray-600 mb-4 max-w-md mx-auto">
                 {error || 'Unable to convert document to secure viewing format.'}
               </p>
+              <button
+                onClick={() => {
+                  // Clear failed page from cache and retry
+                  setError(null)
+                  failedPages.delete(currentPage)
+                  setFailedPages(new Set(failedPages))
+                  pageCache.delete(`${currentPage}_preview`)
+                  pageCache.delete(`${currentPage}_final`)
+                  pageCache.delete(`${currentPage}_ultra`)
+                  setPageCache(new Map(pageCache))
+                  if (document?.file_url) {
+                    setLoadingPage(true)
+                    loadPage(currentPage, document.file_url, abortController?.signal)
+                  }
+                }}
+                className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center mx-auto"
+              >
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Retry Page {currentPage}
+              </button>
+            </div>
+          ) : (
+            /* Show loading spinner for all other cases (including quality transitions) */
+            <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 p-12 text-center">
+              <div className="w-16 h-16 mx-auto mb-6">
+                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-red-600"></div>
+              </div>
+              <h3 className="text-2xl font-semibold text-gray-900 mb-4">Loading Page {currentPage}</h3>
+              <p className="text-gray-600">Converting page for secure viewing...</p>
             </div>
           )}
         </div>
