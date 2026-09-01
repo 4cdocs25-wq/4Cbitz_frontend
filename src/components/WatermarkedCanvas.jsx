@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react'
 
 const WatermarkedCanvas = ({ 
   imageData, 
-  watermarkText = "4Csecure", 
+  watermarkText = "4C BZ",
   pageNumber, 
   totalPages, 
   className = "",
@@ -204,7 +204,6 @@ const WatermarkedCanvas = ({
       ref={canvasRef}
       className={`w-full h-auto transition-opacity duration-500 ${className}`}
       style={{
-        minHeight: '80vh',
         objectFit: 'contain',
         backgroundColor: 'white',
         userSelect: 'none',

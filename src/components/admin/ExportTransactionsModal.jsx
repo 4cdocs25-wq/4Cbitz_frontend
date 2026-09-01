@@ -1,10 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import * as XLSX from 'xlsx';
 import { paymentsAPI } from '../../api';
 
-const ExportTransactionsModal = ({ isOpen, onClose }) => {
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+const ExportTransactionsModal = ({ isOpen, onClose, initialStartDate = '', initialEndDate = '' }) => {
+  const [startDate, setStartDate] = useState(initialStartDate);
+  const [endDate, setEndDate] = useState(initialEndDate);
+
+  // Update state when props change (modal opens with new dates)
+  useEffect(() => {
+    setStartDate(initialStartDate);
+    setEndDate(initialEndDate);
+  }, [initialStartDate, initialEndDate]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -59,8 +65,26 @@ const ExportTransactionsModal = ({ isOpen, onClose }) => {
           'Session ID': t.stripe_session_id || 'N/A'
         }));
 
-        // Create workbook and worksheet
-        const worksheet = XLSX.utils.json_to_sheet(excelData);
+        // Get current datetime for "Taken on" timestamp
+        const now = new Date();
+        const takenOn = now.toLocaleString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+        const fileDateTime = now.toISOString().slice(0, 16).replace('T', '_').replace(':', '-');
+
+        // Create workbook and worksheet with title row
+        const worksheet = XLSX.utils.aoa_to_sheet([[`4CBZ Transactions from ${startDate} To ${endDate}`]]);
+        // Add data starting from row 3 (row 2 is empty for spacing)
+        XLSX.utils.sheet_add_json(worksheet, excelData, { origin: 'A3' });
+
+        // Add "Taken on" at bottom after data (row 3 is header, then data rows, then empty row, then taken on)
+        const takenOnRow = excelData.length + 5;
+        XLSX.utils.sheet_add_aoa(worksheet, [[`Taken on: ${takenOn}`]], { origin: `A${takenOnRow}` });
+
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, 'Transactions');
 
@@ -78,8 +102,8 @@ const ExportTransactionsModal = ({ isOpen, onClose }) => {
         ];
         worksheet['!cols'] = colWidths;
 
-        // Generate filename with date range
-        const fileName = `transactions_${startDate}_to_${endDate}.xlsx`;
+        // Generate filename with date range and datetime
+        const fileName = `transactions_${startDate}_to_${endDate}_${fileDateTime}.xlsx`;
 
         // Download file
         XLSX.writeFile(workbook, fileName);
