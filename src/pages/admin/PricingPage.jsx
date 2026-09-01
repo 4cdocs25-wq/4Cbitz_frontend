@@ -5,25 +5,99 @@ const PricingPage = () => {
   const [price, setPrice] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [campaignEnabled, setCampaignEnabled] = useState(false);
+  const [campaignEndsAt, setCampaignEndsAt] = useState('');
+  const [campaignSettingsExist, setCampaignSettingsExist] = useState({ enabled: false, endsAt: false });
+  const [savingCampaign, setSavingCampaign] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
   useEffect(() => {
-    fetchPrice();
+    fetchSettings();
   }, []);
 
-  const fetchPrice = async () => {
+  const toDateTimeLocalValue = (isoDate) => {
+    if (!isoDate) return '';
+    const date = new Date(isoDate);
+    if (Number.isNaN(date.getTime())) return '';
+
+    const pad = (value) => String(value).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  };
+
+  const fetchSettings = async () => {
     try {
       setLoading(true);
-      const response = await settingsAPI.getByKey('lifetime_subscription_price');
+      const response = await settingsAPI.getAll();
       if (response.success) {
-        setPrice(response.data.value);
+        const settings = Object.fromEntries(response.data.map((setting) => [setting.key, setting.value]));
+        if (!settings.lifetime_subscription_price) {
+          throw new Error('Subscription price setting is missing');
+        }
+
+        setPrice(settings.lifetime_subscription_price);
+        setCampaignEnabled(settings.free_access_enabled === 'true');
+        setCampaignEndsAt(toDateTimeLocalValue(settings.free_access_ends_at));
+        setCampaignSettingsExist({
+          enabled: Object.hasOwn(settings, 'free_access_enabled'),
+          endsAt: Object.hasOwn(settings, 'free_access_ends_at')
+        });
       }
     } catch (error) {
-      console.error('Error fetching price:', error);
-      setError('Failed to load current price');
+      console.error('Error fetching settings:', error);
+      setError('Failed to load pricing settings');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const saveCampaignSetting = async (key, value, description, exists) => {
+    if (exists) {
+      return settingsAPI.update(key, value);
+    }
+    return settingsAPI.create(key, value, description);
+  };
+
+  const handleCampaignSave = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+
+    const endDate = campaignEndsAt ? new Date(campaignEndsAt) : null;
+    if (campaignEnabled && (!endDate || Number.isNaN(endDate.getTime()) || endDate.getTime() <= Date.now())) {
+      setError('Choose a future end date and time before enabling free access.');
+      return;
+    }
+
+    try {
+      setSavingCampaign(true);
+
+      // Save the end time first. If enabling is saved first, there is a short period
+      // where the campaign could use an old end date.
+      if (endDate) {
+        await saveCampaignSetting(
+          'free_access_ends_at',
+          endDate.toISOString(),
+          'UTC timestamp when the temporary free-access campaign ends',
+          campaignSettingsExist.endsAt
+        );
+      }
+
+      await saveCampaignSetting(
+        'free_access_enabled',
+        campaignEnabled ? 'true' : 'false',
+        'Whether the temporary free lifetime-access campaign is enabled',
+        campaignSettingsExist.enabled
+      );
+
+      setCampaignSettingsExist({ enabled: true, endsAt: Boolean(endDate) || campaignSettingsExist.endsAt });
+      setSuccess(campaignEnabled ? 'Free-access campaign is now active.' : 'Free-access campaign has been turned off.');
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (error) {
+      console.error('Error saving free-access campaign:', error);
+      setError(error.response?.data?.message || 'Failed to save the free-access campaign');
+    } finally {
+      setSavingCampaign(false);
     }
   };
 
@@ -72,6 +146,8 @@ const PricingPage = () => {
     }).format(amount);
   };
 
+  const isCampaignActive = campaignEnabled && campaignEndsAt && new Date(campaignEndsAt).getTime() > Date.now();
+
   return (
     <div className="p-8 overflow-y-auto h-screen">
         <div className="max-w-4xl mx-auto">
@@ -104,6 +180,60 @@ const PricingPage = () => {
                     </svg>
                   </div>
                 </div>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-6">
+                  <div>
+                    <h2 className="text-xl font-semibold text-gray-900">Temporary Free Access</h2>
+                    <p className="mt-1 text-sm text-gray-600">Give new users free lifetime access until a chosen date and time.</p>
+                  </div>
+                  <span className={`inline-flex w-fit rounded-full px-3 py-1 text-sm font-semibold ${isCampaignActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700'}`}>
+                    {isCampaignActive ? 'Active now' : 'Inactive'}
+                  </span>
+                </div>
+
+                <form onSubmit={handleCampaignSave} className="space-y-6">
+                  <label className="flex items-center justify-between gap-4 rounded-lg border border-gray-200 p-4 cursor-pointer">
+                    <div>
+                      <p className="font-medium text-gray-900">Enable free access</p>
+                      <p className="mt-1 text-sm text-gray-500">Checkout will be $0.00 and Stripe will not request a card.</p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={campaignEnabled}
+                      onChange={(e) => setCampaignEnabled(e.target.checked)}
+                      className="h-5 w-5 accent-red-600"
+                    />
+                  </label>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="free-access-ends-at">
+                      Free access ends at
+                    </label>
+                    <input
+                      id="free-access-ends-at"
+                      type="datetime-local"
+                      value={campaignEndsAt}
+                      onChange={(e) => setCampaignEndsAt(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                      required={campaignEnabled}
+                    />
+                    <p className="text-sm text-gray-500 mt-2">Uses your local time. After this time, new users automatically return to the normal paid price.</p>
+                  </div>
+
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-900">
+                    Everyone who joins during this campaign receives lifetime access. Turning it off later only affects new users.
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={savingCampaign}
+                    className="w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold py-3 px-6 rounded-lg transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  >
+                    {savingCampaign ? 'Saving campaign…' : 'Save Free Access Campaign'}
+                  </button>
+                </form>
               </div>
 
               {/* Update Price Form */}

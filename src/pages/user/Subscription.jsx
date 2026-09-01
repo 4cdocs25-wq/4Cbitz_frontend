@@ -14,23 +14,45 @@ const Subscription = () => {
   const [hasSubscription, setHasSubscription] = useState(false)
   const [loading, setLoading] = useState(true)
   const [price, setPrice] = useState(null)
+  const [isFreeAccessCampaign, setIsFreeAccessCampaign] = useState(false)
+  const [freeAccessEndsAt, setFreeAccessEndsAt] = useState(null)
 
   useEffect(() => {
     checkSubscriptionStatus()
-    fetchPrice()
+    fetchOffer()
     handleCancelledPayment()
   }, [])
 
-  const fetchPrice = async () => {
+  const fetchOffer = async () => {
     try {
-      const response = await settingsAPI.getPublicByKey('lifetime_subscription_price')
+      const response = await settingsAPI.getPublicByKey('subscription-offer')
       if (response.success && response.data) {
-        setPrice(response.data.value)
+        setPrice(response.data.price)
+        setIsFreeAccessCampaign(response.data.isFreeAccessCampaign === true)
+        setFreeAccessEndsAt(response.data.endsAt || null)
       }
     } catch (error) {
-      console.error('Error fetching price:', error)
-      // Keep default price of 29.99 if fetch fails
+      // Keep the page usable during a phased deployment where the frontend reaches
+      // an older backend that does not yet provide the calculated offer endpoint.
+      try {
+        const response = await settingsAPI.getPublicByKey('lifetime_subscription_price')
+        if (response.success && response.data) {
+          setPrice(response.data.value)
+        }
+      } catch (fallbackError) {
+        console.error('Error fetching subscription offer:', fallbackError)
+      }
     }
+  }
+
+  const formatCampaignEnd = (endsAt) => {
+    if (!endsAt) return ''
+    const date = new Date(endsAt)
+    if (Number.isNaN(date.getTime())) return ''
+    return new Intl.DateTimeFormat(undefined, {
+      dateStyle: 'medium',
+      timeStyle: 'short'
+    }).format(date)
   }
 
   const handleCancelledPayment = async () => {
@@ -130,9 +152,16 @@ const Subscription = () => {
                 <div className="text-5xl sm:text-6xl font-bold text-white mb-2">
                   {price ? `$${price}` : '$00.00'}
                 </div>
-                <div className="text-white/90 text-lg">One-time payment</div>
+                <div className="text-white/90 text-lg">
+                  {isFreeAccessCampaign ? 'Limited-time free access' : 'One-time payment'}
+                </div>
               </div>
               <p className="text-gray-600 text-lg">Lifetime access • No hidden fees</p>
+              {isFreeAccessCampaign && freeAccessEndsAt && (
+                <p className="mt-3 text-sm font-medium text-green-700">
+                  Free access ends {formatCampaignEnd(freeAccessEndsAt)}
+                </p>
+              )}
             </div>
 
             {/* Features */}
@@ -269,7 +298,7 @@ const Subscription = () => {
                         <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
                         </svg>
-                        <span>Pay with Stripe</span>
+                        <span>{isFreeAccessCampaign ? 'Get Free Lifetime Access' : 'Pay with Stripe'}</span>
                       </div>
                     )}
                   </button>
@@ -279,7 +308,7 @@ const Subscription = () => {
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
-                    <span>Secure Payment • SSL Encrypted</span>
+                    <span>{isFreeAccessCampaign ? 'Free access • No card required' : 'Secure Payment • SSL Encrypted'}</span>
                   </div>
                 </>
               )}

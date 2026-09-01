@@ -261,6 +261,8 @@ const TransactionsPage = () => {
         <ExportTransactionsModal
           isOpen={showExportModal}
           onClose={() => setShowExportModal(false)}
+          initialStartDate={filters.startDate}
+          initialEndDate={filters.endDate}
         />
       </div>
   );

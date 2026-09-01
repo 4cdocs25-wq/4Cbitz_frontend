@@ -222,6 +222,8 @@ const UsersManagementPage = () => {
         <ExportUsersModal
           isOpen={showExportModal}
           onClose={() => setShowExportModal(false)}
+          initialStartDate={filters.startDate}
+          initialEndDate={filters.endDate}
         />
       </div>
   );
